@@ -1,0 +1,20 @@
+[package]
+name = "bitcoinvert"
+version = "0.1.0"
+description = "CLI tool that fetches Bitcoin exchange rates from Blockchain.info and shows conversions to other currencies/denominations"
+authors = ["Gabriel Comte"]
+edition = "2021"
+rust-version = "1.61.0"
+repository = "https://github.com/gcomte/bitcoinvert"
+license = "MIT"
+
+
+[dependencies]
+env_logger = "0.9.0"
+exitcode = "1.1.2"
+home-config = { version = "0.4.0", features = ["yaml"] }
+log = "0.4.17"
+reqwest = { version = "0.11.10", features = ["json"] }
+serde = { version = "1.0.137", features = ["derive"] }
+serde_yaml = "0.8.24"
+tokio = { version = "1.18.2", features = ["full"] }
