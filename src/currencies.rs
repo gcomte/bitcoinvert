@@ -1,8 +1,7 @@
 use serde::{Deserialize, Serialize};
-use std::fmt;
 use std::fmt::{Debug, Display, Error};
 use std::str::FromStr;
-use strum_macros::EnumString;
+use strum_macros::{Display, EnumString};
 
 #[typetag::serde(tag = "currency-type", content = "unit")]
 pub trait Currency: Display {}
@@ -34,8 +33,8 @@ impl Currencies {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, EnumString)]
-#[strum(ascii_case_insensitive)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, EnumString, Display)]
+#[strum(ascii_case_insensitive, serialize_all = "UPPERCASE")]
 pub enum BitcoinUnit {
     Btc,  // bitcoin
     Mbtc, // milli-bitcoin
@@ -44,17 +43,11 @@ pub enum BitcoinUnit {
     Msat, // milli-satoshi
 }
 
-impl Display for BitcoinUnit {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{:?}", self)
-    }
-}
-
 #[typetag::serde]
 impl Currency for BitcoinUnit {}
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, EnumString)]
-#[strum(ascii_case_insensitive)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, EnumString, Display)]
+#[strum(ascii_case_insensitive, serialize_all = "UPPERCASE")]
 pub enum Fiat {
     Ars,
     Aud,
@@ -86,12 +79,6 @@ pub enum Fiat {
     Usd,
 }
 
-impl Display for Fiat {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{:?}", self)
-    }
-}
-
 #[typetag::serde]
 impl Currency for Fiat {}
 
@@ -109,13 +96,13 @@ mod tests {
         let currency_capitalized = Currencies::parse("Usd").unwrap();
         let currency_uppercase = Currencies::parse("USD").unwrap();
 
-        assert_eq!(currency_lowercase_default.to_string(), "Usd");
-        assert_eq!(currency_capitalized_default.to_string(), "Usd");
-        assert_eq!(currency_uppercase_default.to_string(), "Usd");
+        assert_eq!(currency_lowercase_default.to_string(), "USD");
+        assert_eq!(currency_capitalized_default.to_string(), "USD");
+        assert_eq!(currency_uppercase_default.to_string(), "USD");
 
-        assert_eq!(currency_lowercase.to_string(), "Usd");
-        assert_eq!(currency_capitalized.to_string(), "Usd");
-        assert_eq!(currency_uppercase.to_string(), "Usd");
+        assert_eq!(currency_lowercase.to_string(), "USD");
+        assert_eq!(currency_capitalized.to_string(), "USD");
+        assert_eq!(currency_uppercase.to_string(), "USD");
     }
 
     #[test]
@@ -128,13 +115,13 @@ mod tests {
         let currency_capitalized = Currencies::parse("Btc").unwrap();
         let currency_uppercase = Currencies::parse("BTC").unwrap();
 
-        assert_eq!(currency_lowercase_default.to_string(), "Btc");
-        assert_eq!(currency_capitalized_default.to_string(), "Btc");
-        assert_eq!(currency_uppercase_default.to_string(), "Btc");
+        assert_eq!(currency_lowercase_default.to_string(), "BTC");
+        assert_eq!(currency_capitalized_default.to_string(), "BTC");
+        assert_eq!(currency_uppercase_default.to_string(), "BTC");
 
-        assert_eq!(currency_lowercase.to_string(), "Btc");
-        assert_eq!(currency_capitalized.to_string(), "Btc");
-        assert_eq!(currency_uppercase.to_string(), "Btc");
+        assert_eq!(currency_lowercase.to_string(), "BTC");
+        assert_eq!(currency_capitalized.to_string(), "BTC");
+        assert_eq!(currency_uppercase.to_string(), "BTC");
     }
 
     #[test]
@@ -151,7 +138,7 @@ mod tests {
         let currency_empty_string = Currencies::parse_resort_to_default("");
         let currency_non_existant = Currencies::parse_resort_to_default("non-existant");
 
-        assert_eq!(currency_empty_string.to_string(), "Sat");
-        assert_eq!(currency_non_existant.to_string(), "Sat");
+        assert_eq!(currency_empty_string.to_string(), "SAT");
+        assert_eq!(currency_non_existant.to_string(), "SAT");
     }
 }
