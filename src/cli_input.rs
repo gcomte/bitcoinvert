@@ -1,9 +1,21 @@
 use crate::currencies::Currencies;
 use crate::defaults::Defaults;
 use crate::Currency;
+use clap::Parser;
 use std::error::Error;
 use std::num::ParseFloatError;
 use std::{fmt, process};
+
+#[derive(Parser, Debug)]
+#[clap(author, version, about, long_about = None)]
+pub struct Args {
+    /// The amount of money to convert
+    pub amount: f64,
+    /// The currency to convert from
+    pub input_currency: Option<String>,
+    /// The currency to convert to
+    pub output_currency: Option<String>,
+}
 
 pub struct CliInput {
     pub amount: f64,
@@ -42,40 +54,24 @@ impl From<ParseFloatError> for InputError {
     }
 }
 
-impl CliInput {
-    pub fn parse() -> Result<Self, InputError> {
-        let amount = Self::parse_amount()?;
-        let input_currency = Self::parse_input_currency();
-        let output_currency = Self::parse_output_currency();
-
-        let output_currence_debug_text = match &output_currency {
-            Some(currency) => format!("'{}'", currency),
-            None => "[undefined]".to_string(),
-        };
-        log::debug!(
-            "Parsing CLI arguments and config > amount: {}, input-currency: '{}', output-currency: {}",
-            amount,
-            input_currency,
-            output_currence_debug_text
-        );
-
-        Ok(Self {
-            amount: amount.parse()?,
-            input_currency,
-            output_currency,
-        })
-    }
-
-    fn parse_amount() -> Result<String, InputError> {
-        match std::env::args().nth(1) {
-            Some(amount) => Ok(amount),
-            None => Err(InputError::new("No amount provided!")),
+impl From<Args> for CliInput {
+    fn from(args: Args) -> Self {
+        Self {
+            amount: args.amount,
+            input_currency: Self::parse_input_currency(&args.input_currency),
+            output_currency: Self::parse_output_currency(&args.output_currency),
         }
     }
+}
 
-    fn parse_input_currency() -> Box<dyn Currency> {
-        match std::env::args().nth(2) {
-            Some(currency) => match Currencies::parse(&currency) {
+impl CliInput {
+    pub fn parse() -> Self {
+        Args::parse().into()
+    }
+
+    fn parse_input_currency(string: &Option<String>) -> Box<dyn Currency> {
+        match string {
+            Some(currency) => match Currencies::parse(currency) {
                 Ok(currency) => currency,
                 Err(_) => {
                     eprintln!("\"{}\" is not a valid currency!", currency);
@@ -86,11 +82,9 @@ impl CliInput {
         }
     }
 
-    fn parse_output_currency() -> Option<Box<dyn Currency>> {
-        let output_currency = std::env::args().nth(3);
-
-        match output_currency {
-            Some(currency) => match Currencies::parse(&currency) {
+    fn parse_output_currency(string: &Option<String>) -> Option<Box<dyn Currency>> {
+        match string {
+            Some(currency) => match Currencies::parse(currency) {
                 Ok(currency) => Some(currency),
                 Err(_) => {
                     log::warn!("\"{}\" is not a valid currency! Continuing with multiple output currencies", currency);
