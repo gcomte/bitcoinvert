@@ -20,17 +20,6 @@ impl Currencies {
 
         Err(Default::default())
     }
-
-    pub fn parse_resort_to_default(input: &str) -> Box<dyn Currency> {
-        if let Ok(currency) = Self::parse(input) {
-            return currency;
-        }
-
-        let default = Box::new(BitcoinUnit::Sat);
-        log::warn!("Resort to default currency: {}", default);
-
-        default
-    }
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, EnumString, Display)]
@@ -88,17 +77,9 @@ mod tests {
 
     #[test]
     fn should_return_correct_fiat_currency() {
-        let currency_lowercase_default = Currencies::parse_resort_to_default("usd");
-        let currency_capitalized_default = Currencies::parse_resort_to_default("Usd");
-        let currency_uppercase_default = Currencies::parse_resort_to_default("USD");
-
         let currency_lowercase = Currencies::parse("usd").unwrap();
         let currency_capitalized = Currencies::parse("Usd").unwrap();
         let currency_uppercase = Currencies::parse("USD").unwrap();
-
-        assert_eq!(currency_lowercase_default.to_string(), "USD");
-        assert_eq!(currency_capitalized_default.to_string(), "USD");
-        assert_eq!(currency_uppercase_default.to_string(), "USD");
 
         assert_eq!(currency_lowercase.to_string(), "USD");
         assert_eq!(currency_capitalized.to_string(), "USD");
@@ -107,17 +88,9 @@ mod tests {
 
     #[test]
     fn should_return_correct_bitcoin_denomination() {
-        let currency_lowercase_default = Currencies::parse_resort_to_default("btc");
-        let currency_capitalized_default = Currencies::parse_resort_to_default("Btc");
-        let currency_uppercase_default = Currencies::parse_resort_to_default("BTC");
-
         let currency_lowercase = Currencies::parse("btc").unwrap();
         let currency_capitalized = Currencies::parse("Btc").unwrap();
         let currency_uppercase = Currencies::parse("BTC").unwrap();
-
-        assert_eq!(currency_lowercase_default.to_string(), "BTC");
-        assert_eq!(currency_capitalized_default.to_string(), "BTC");
-        assert_eq!(currency_uppercase_default.to_string(), "BTC");
 
         assert_eq!(currency_lowercase.to_string(), "BTC");
         assert_eq!(currency_capitalized.to_string(), "BTC");
@@ -131,14 +104,5 @@ mod tests {
 
         assert!(currency_empty_string.is_err());
         assert!(currency_non_existant.is_err());
-    }
-
-    #[test]
-    fn incorrect_use_should_default_to_bitcoin_sat() {
-        let currency_empty_string = Currencies::parse_resort_to_default("");
-        let currency_non_existant = Currencies::parse_resort_to_default("non-existant");
-
-        assert_eq!(currency_empty_string.to_string(), "SAT");
-        assert_eq!(currency_non_existant.to_string(), "SAT");
     }
 }
