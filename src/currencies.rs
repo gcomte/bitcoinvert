@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::fmt::{Debug, Display, Error};
 use std::str::FromStr;
+use strum_macros::EnumString;
 
 #[typetag::serde(tag = "currency-type", content = "unit")]
 pub trait Currency: Display {}
@@ -33,28 +34,14 @@ impl Currencies {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, EnumString)]
+#[strum(ascii_case_insensitive)]
 pub enum BitcoinUnit {
     Btc,  // bitcoin
     Mbtc, // milli-bitcoin
     Bits, // μBTC, micro-bitcoin
     Sat,  // satoshi
     Msat, // milli-satoshi
-}
-
-impl FromStr for BitcoinUnit {
-    type Err = ();
-
-    fn from_str(input: &str) -> Result<Self, Self::Err> {
-        match input.to_uppercase().as_str() {
-            "BTC" => Ok(Self::Btc),
-            "MBTC" => Ok(Self::Mbtc),
-            "BITS" => Ok(Self::Bits),
-            "SAT" => Ok(Self::Sat),
-            "MSAT" => Ok(Self::Msat),
-            _ => Err(()),
-        }
-    }
 }
 
 impl Display for BitcoinUnit {
@@ -66,7 +53,8 @@ impl Display for BitcoinUnit {
 #[typetag::serde]
 impl Currency for BitcoinUnit {}
 
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, EnumString)]
+#[strum(ascii_case_insensitive)]
 pub enum Fiat {
     Ars,
     Aud,
@@ -96,44 +84,6 @@ pub enum Fiat {
     Try,
     Twd,
     Usd,
-}
-
-impl FromStr for Fiat {
-    type Err = ();
-
-    fn from_str(input: &str) -> Result<Self, Self::Err> {
-        match input.to_uppercase().as_str() {
-            "ARS" => Ok(Self::Ars),
-            "AUD" => Ok(Self::Aud),
-            "BRL" => Ok(Self::Brl),
-            "CAD" => Ok(Self::Cad),
-            "CHF" => Ok(Self::Chf),
-            "CLP" => Ok(Self::Clp),
-            "CNY" => Ok(Self::Cny),
-            "CZK" => Ok(Self::Czk),
-            "DKK" => Ok(Self::Dkk),
-            "EUR" => Ok(Self::Eur),
-            "GBP" => Ok(Self::Gbp),
-            "HKD" => Ok(Self::Hkd),
-            "HRK" => Ok(Self::Hrk),
-            "HUF" => Ok(Self::Huf),
-            "INR" => Ok(Self::Inr),
-            "ISK" => Ok(Self::Isk),
-            "JPY" => Ok(Self::Jpy),
-            "KRW" => Ok(Self::Krw),
-            "NZD" => Ok(Self::Nzd),
-            "PLN" => Ok(Self::Pln),
-            "RON" => Ok(Self::Ron),
-            "RUB" => Ok(Self::Rub),
-            "SEK" => Ok(Self::Sek),
-            "SGD" => Ok(Self::Sgd),
-            "THB" => Ok(Self::Thb),
-            "TRY" => Ok(Self::Try),
-            "TWD" => Ok(Self::Twd),
-            "USD" => Ok(Self::Usd),
-            _ => Err(()),
-        }
-    }
 }
 
 impl Display for Fiat {
