@@ -1,4 +1,4 @@
-use crate::currencies::{BitcoinUnit, Currencies, Fiat};
+use crate::currencies::{BitcoinUnit, Fiat};
 use crate::Currency;
 use home_config::HomeConfig;
 use serde::{Deserialize, Serialize};
@@ -6,16 +6,10 @@ use std::error::Error;
 
 const DEFAULTS_FILE: &str = "defaults.yaml";
 
+#[derive(Serialize, Deserialize)]
 pub struct Defaults {
     input_currency: Box<dyn Currency>,
     output_currencies: Vec<Box<dyn Currency>>,
-}
-
-// Todo: Do proper serialization instead of a dedicated struct
-#[derive(Serialize, Deserialize, Debug)]
-struct DefaultsSerialized {
-    input_currency: String,
-    output_currencies: Vec<String>,
 }
 
 impl Defaults {
@@ -48,29 +42,26 @@ impl Defaults {
     }
 
     fn load_defaults(config: &HomeConfig) -> Result<Defaults, Box<dyn Error>> {
-        let defaults: DefaultsSerialized = serde_yaml::from_str(&config.read_to_string()?)?;
+        let defaults: Defaults = serde_yaml::from_str(&config.read_to_string()?)?;
         log::debug!(
-            "Reading contents of file {} : {:?}",
+            "Reading contents of file {} --> input-currency: {}, output-currencies: [{}]",
             config.path().display(),
-            defaults
+            defaults.input_currency.to_string(),
+            defaults.output_currencies
+                .iter()
+                .map(|c| c.to_string())
+                .collect::<Vec<String>>()
+                .join(", ")
         );
 
-        if Currencies::parse(&defaults.input_currency).is_err() {
-            log::warn!(
-                "Invalid input_currency defined in file {} currency: '{}'",
-                config.path().display(),
-                defaults.input_currency
-            );
-        }
-
-        Ok(defaults.into())
+        Ok(defaults)
     }
 
     fn setup(config: &HomeConfig) {
         config.save_yaml(Self::load_defaults_template()).unwrap();
     }
 
-    fn load_defaults_template() -> DefaultsSerialized {
+    fn load_defaults_template() -> Defaults {
         Defaults {
             input_currency: Box::new(BitcoinUnit::Sat),
             output_currencies: vec![
@@ -81,42 +72,6 @@ impl Defaults {
                 Box::new(Fiat::Eur),
                 Box::new(Fiat::Gbp),
             ],
-        }
-        .into()
-    }
-}
-
-impl From<Defaults> for DefaultsSerialized {
-    fn from(defaults: Defaults) -> Self {
-        let output_currencies: Vec<String> = defaults
-            .output_currencies
-            .iter()
-            .map(|c| c.to_string())
-            .collect();
-
-        DefaultsSerialized {
-            input_currency: defaults.input_currency.to_string(),
-            output_currencies,
-        }
-    }
-}
-
-impl From<DefaultsSerialized> for Defaults {
-    fn from(ds: DefaultsSerialized) -> Self {
-        Defaults {
-            input_currency: Currencies::parse_resort_to_default(&ds.input_currency),
-            output_currencies: ds
-                .output_currencies
-                .iter()
-                .map(|c| {
-                    Currencies::parse(c).unwrap_or_else(|_| {
-                        panic!(
-                            "Output currency '{}' is not a valid currency! Revise your {}",
-                            c, DEFAULTS_FILE
-                        );
-                    })
-                })
-                .collect(),
         }
     }
 }

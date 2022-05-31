@@ -3,6 +3,7 @@ use std::fmt;
 use std::fmt::{Debug, Display, Error};
 use std::str::FromStr;
 
+#[typetag::serde(tag = "currency-type", content = "unit")]
 pub trait Currency: Display {}
 
 pub struct Currencies;
@@ -62,6 +63,7 @@ impl Display for BitcoinUnit {
     }
 }
 
+#[typetag::serde]
 impl Currency for BitcoinUnit {}
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
@@ -140,6 +142,7 @@ impl Display for Fiat {
     }
 }
 
+#[typetag::serde]
 impl Currency for Fiat {}
 
 #[cfg(test)]
