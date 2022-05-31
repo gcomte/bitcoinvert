@@ -3,6 +3,7 @@ use crate::Currency;
 use home_config::HomeConfig;
 use serde::{Deserialize, Serialize};
 use std::error::Error;
+use std::process;
 
 const DEFAULTS_FILE: &str = "defaults.yaml";
 
@@ -31,12 +32,11 @@ impl Defaults {
         match Self::load_defaults(&config) {
             Ok(defaults) => defaults,
             Err(err) => {
-                log::error!(
+                eprintln!(
                     "Can't load default values from file {}. Error: {}",
-                    DEFAULTS_FILE,
-                    err
+                    DEFAULTS_FILE, err
                 );
-                panic!("{}", err);
+                process::exit(exitcode::USAGE);
             }
         }
     }
@@ -47,7 +47,8 @@ impl Defaults {
             "Reading contents of file {} --> input-currency: {}, output-currencies: [{}]",
             config.path().display(),
             defaults.input_currency.to_string(),
-            defaults.output_currencies
+            defaults
+                .output_currencies
                 .iter()
                 .map(|c| c.to_string())
                 .collect::<Vec<String>>()
