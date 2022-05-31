@@ -64,14 +64,14 @@ impl Defaults {
 
     fn load_defaults_template() -> Defaults {
         Defaults {
-            input_currency: Box::new(BitcoinUnit::Sat),
+            input_currency: Box::new(BitcoinUnit::SAT),
             output_currencies: vec![
-                Box::new(BitcoinUnit::Btc),
-                Box::new(BitcoinUnit::Sat),
-                Box::new(BitcoinUnit::Msat),
-                Box::new(Fiat::Usd),
-                Box::new(Fiat::Eur),
-                Box::new(Fiat::Gbp),
+                Box::new(BitcoinUnit::BTC),
+                Box::new(BitcoinUnit::SAT),
+                Box::new(BitcoinUnit::MSAT),
+                Box::new(Fiat::USD),
+                Box::new(Fiat::EUR),
+                Box::new(Fiat::GBP),
             ],
         }
     }

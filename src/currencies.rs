@@ -25,11 +25,11 @@ impl Currencies {
 #[derive(Serialize, Deserialize, Debug, PartialEq, EnumString, Display)]
 #[strum(ascii_case_insensitive, serialize_all = "UPPERCASE")]
 pub enum BitcoinUnit {
-    Btc,  // bitcoin
-    Mbtc, // milli-bitcoin
-    Bits, // μBTC, micro-bitcoin
-    Sat,  // satoshi
-    Msat, // milli-satoshi
+    BTC,  // bitcoin
+    MBTC, // milli-bitcoin
+    BITS, // μBTC, micro-bitcoin
+    SAT,  // satoshi
+    MSAT, // milli-satoshi
 }
 
 #[typetag::serde]
@@ -38,34 +38,34 @@ impl Currency for BitcoinUnit {}
 #[derive(Serialize, Deserialize, Debug, PartialEq, EnumString, Display)]
 #[strum(ascii_case_insensitive, serialize_all = "UPPERCASE")]
 pub enum Fiat {
-    Ars,
-    Aud,
-    Brl,
-    Cad,
-    Chf,
-    Clp,
-    Cny,
-    Czk,
-    Dkk,
-    Eur,
-    Gbp,
-    Hkd,
-    Hrk,
-    Huf,
-    Inr,
-    Isk,
-    Jpy,
-    Krw,
-    Nzd,
-    Pln,
-    Ron,
-    Rub,
-    Sek,
-    Sgd,
-    Thb,
-    Try,
-    Twd,
-    Usd,
+    ARS,
+    AUD,
+    BRL,
+    CAD,
+    CHF,
+    CLP,
+    CNY,
+    CZK,
+    DKK,
+    EUR,
+    GBP,
+    HKD,
+    HRK,
+    HUF,
+    INR,
+    ISK,
+    JPY,
+    KRW,
+    NNZD,
+    PLN,
+    RON,
+    RUB,
+    SEK,
+    SGD,
+    THB,
+    TRY,
+    TWD,
+    USD,
 }
 
 #[typetag::serde]
