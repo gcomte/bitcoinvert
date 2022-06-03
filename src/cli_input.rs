@@ -10,7 +10,7 @@ use std::{fmt, process};
 #[clap(author, version, about, long_about = None)]
 pub struct Args {
     /// The amount of money to convert
-    pub amount: f64,
+    pub amount: Option<f64>,
     /// The currency to convert from
     pub input_currency: Option<String>,
     /// The currency to convert to
@@ -57,7 +57,7 @@ impl From<ParseFloatError> for InputError {
 impl From<Args> for CliInput {
     fn from(args: Args) -> Self {
         Self {
-            amount: args.amount,
+            amount: Self::parse_input_amount(args.amount),
             input_currency: Self::parse_input_currency(&args.input_currency),
             output_currency: Self::parse_output_currency(&args.output_currency),
         }
@@ -67,6 +67,13 @@ impl From<Args> for CliInput {
 impl CliInput {
     pub fn parse() -> Self {
         Args::parse().into()
+    }
+
+    fn parse_input_amount(input: Option<f64>) -> f64 {
+        match input {
+            Some(amount) => amount,
+            None => Defaults::get_default_amount(),
+        }
     }
 
     fn parse_input_currency(string: &Option<String>) -> Box<dyn Currency> {

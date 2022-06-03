@@ -9,11 +9,16 @@ const DEFAULTS_FILE: &str = "defaults.yaml";
 
 #[derive(Serialize, Deserialize)]
 pub struct Defaults {
+    input_amount: f64,
     input_currency: Box<dyn Currency>,
     output_currencies: Vec<Box<dyn Currency>>,
 }
 
 impl Defaults {
+    pub fn get_default_amount() -> f64 {
+        Self::retrieve().input_amount
+    }
+
     pub fn get_default_currency() -> Box<dyn Currency> {
         Self::retrieve().input_currency
     }
@@ -44,8 +49,9 @@ impl Defaults {
     fn load_defaults(config: &HomeConfig) -> Result<Defaults, Box<dyn Error>> {
         let defaults: Defaults = serde_yaml::from_str(&config.read_to_string()?)?;
         log::debug!(
-            "Reading contents of file {} --> input-currency: {}, output-currencies: [{}]",
+            "Reading contents of file {} --> input-amount: {}, input-currency: {}, output-currencies: [{}]",
             config.path().display(),
+            defaults.input_amount,
             defaults.input_currency.to_string(),
             defaults
                 .output_currencies
@@ -64,6 +70,7 @@ impl Defaults {
 
     fn load_defaults_template() -> Defaults {
         Defaults {
+            input_amount: 100_000_000.0,
             input_currency: Box::new(BitcoinUnit::SAT),
             output_currencies: vec![
                 Box::new(BitcoinUnit::BTC),
