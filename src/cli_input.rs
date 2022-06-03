@@ -57,7 +57,7 @@ impl From<ParseFloatError> for InputError {
 impl From<Args> for CliInput {
     fn from(args: Args) -> Self {
         Self {
-            amount: Self::parse_input_amount(args.amount),
+            amount: Self::parse_amount(args.amount),
             input_currency: Self::parse_input_currency(&args.input_currency),
             output_currency: Self::parse_output_currency(&args.output_currency),
         }
@@ -69,7 +69,7 @@ impl CliInput {
         Args::parse().into()
     }
 
-    fn parse_input_amount(input: Option<f64>) -> f64 {
+    fn parse_amount(input: Option<f64>) -> f64 {
         match input {
             Some(amount) => amount,
             None => Defaults::get_default_amount(),
