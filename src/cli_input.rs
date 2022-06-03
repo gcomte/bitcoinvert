@@ -85,7 +85,7 @@ impl CliInput {
                     process::exit(exitcode::USAGE);
                 }
             },
-            None => Defaults::get_default_currency(),
+            None => Defaults::get_default_input_currency(),
         }
     }
 

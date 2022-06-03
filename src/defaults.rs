@@ -19,7 +19,7 @@ impl Defaults {
         Self::retrieve().amount
     }
 
-    pub fn get_default_currency() -> Box<dyn Currency> {
+    pub fn get_default_input_currency() -> Box<dyn Currency> {
         Self::retrieve().input_currency
     }
 
