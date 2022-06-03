@@ -23,6 +23,10 @@ impl Defaults {
         Self::retrieve().input_currency
     }
 
+    pub fn get_default_output_currencies() -> Vec<Box<dyn Currency>> {
+        Self::retrieve().output_currencies
+    }
+
     pub fn retrieve() -> Defaults {
         let config = HomeConfig::new(env!("CARGO_PKG_NAME"), DEFAULTS_FILE);
 

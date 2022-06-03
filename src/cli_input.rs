@@ -20,7 +20,7 @@ pub struct Args {
 pub struct CliInput {
     pub amount: f64,
     pub input_currency: Box<dyn Currency>,
-    pub output_currency: Option<Box<dyn Currency>>,
+    pub output_currencies: Vec<Box<dyn Currency>>,
 }
 
 #[derive(Debug)]
@@ -59,7 +59,7 @@ impl From<Args> for CliInput {
         Self {
             amount: Self::parse_amount(args.amount),
             input_currency: Self::parse_input_currency(&args.input_currency),
-            output_currency: Self::parse_output_currency(&args.output_currency),
+            output_currencies: Self::parse_output_currency(&args.output_currency),
         }
     }
 }
@@ -89,16 +89,16 @@ impl CliInput {
         }
     }
 
-    fn parse_output_currency(string: &Option<String>) -> Option<Box<dyn Currency>> {
-        match string {
-            Some(currency) => match Currencies::parse(currency) {
-                Ok(currency) => Some(currency),
+    fn parse_output_currency(string: &Option<String>) -> Vec<Box<dyn Currency>> {
+        if let Some(string) = string {
+            match Currencies::parse(string) {
+                Ok(currency) => return vec![currency],
                 Err(_) => {
-                    log::warn!("\"{}\" is not a valid currency! Continuing with multiple output currencies", currency);
-                    None
+                    log::warn!("\"{}\" is not a valid currency! Continuing with multiple output currencies", string);
                 }
-            },
-            None => None,
+            }
         }
+
+        Defaults::get_default_output_currencies()
     }
 }
