@@ -56,7 +56,7 @@ pub enum Fiat {
     ISK,
     JPY,
     KRW,
-    NNZD,
+    NZD,
     PLN,
     RON,
     RUB,
