@@ -3,7 +3,7 @@ use std::fmt::{Debug, Display, Error};
 use std::str::FromStr;
 use strum_macros::{Display, EnumString};
 
-#[typetag::serde(tag = "currency-type", content = "unit")]
+#[typetag::serde()]
 pub trait Currency: Display {}
 
 pub struct Currencies;
