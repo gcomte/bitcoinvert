@@ -1,10 +1,19 @@
+use crate::EXCHANGE_RATE_API_CONSUMER;
+use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use std::fmt::{Debug, Display, Error};
 use std::str::FromStr;
 use strum_macros::{Display, EnumString};
 
 #[typetag::serde()]
-pub trait Currency: Display {}
+pub trait Currency: Display {
+    fn btc_value(&self) -> f64;
+}
+// #[typetag::serde()]
+// #[async_trait]
+// pub trait Currency: Display {
+//     async fn btc_value(&self, exchange_rate_api_consumer: &mut ExchangeRateProvider<ApiConsumer>) -> f64;
+// }
 
 pub struct Currencies;
 
@@ -33,9 +42,20 @@ pub enum BitcoinUnit {
 }
 
 #[typetag::serde]
-impl Currency for BitcoinUnit {}
+#[async_trait]
+impl Currency for BitcoinUnit {
+    fn btc_value(&self) -> f64 {
+        match &self {
+            BitcoinUnit::BTC => 1.0,
+            BitcoinUnit::MBTC => 0.001,
+            BitcoinUnit::BITS => 0.000_001,
+            BitcoinUnit::SAT => 0.000_000_01,
+            BitcoinUnit::MSAT => 0.000_000_000_01,
+        }
+    }
+}
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, EnumString, Display)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Hash, EnumString, Display)]
 #[strum(ascii_case_insensitive, serialize_all = "UPPERCASE")]
 pub enum Fiat {
     ARS,
@@ -69,7 +89,11 @@ pub enum Fiat {
 }
 
 #[typetag::serde]
-impl Currency for Fiat {}
+impl Currency for Fiat {
+    fn btc_value(&self) -> f64 {
+        unsafe { EXCHANGE_RATE_API_CONSUMER.btc_value(self) }
+    }
+}
 
 #[cfg(test)]
 mod tests {
