@@ -14,7 +14,7 @@ async-trait = "0.1.58"
 clap = { version = "4.0.18", features = ["derive"] }
 env_logger = "0.9.1"
 exitcode = "1.1.2"
-home-config = { version = "0.4.0", features = ["yaml"] }
+home-config = { version = "0.5.0", features = ["yaml"] }
 log = "0.4.17"
 reqwest = { version = "0.11.12", features = ["json"] }
 serde = { version = "1.0.147", features = ["derive"] }
