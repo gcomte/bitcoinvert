@@ -16,7 +16,7 @@ env_logger = "0.9.3"
 exitcode = "1.1.2"
 home-config = { version = "0.4.0", features = ["yaml"] }
 log = "0.4.17"
-reqwest = { version = "0.11.12", features = ["json"] }
+reqwest = { version = "0.11.13", features = ["json"] }
 serde = { version = "1.0.147", features = ["derive"] }
 serde_yaml = "0.9.14"
 strum = { version = "0.24", features = ["derive"] }
