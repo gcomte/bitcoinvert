@@ -21,5 +21,5 @@ serde = { version = "1.0.147", features = ["derive"] }
 serde_yaml = "0.9.14"
 strum = { version = "0.24", features = ["derive"] }
 strum_macros = "0.24"
-tokio = { version = "1.21.2", features = ["full"] }
+tokio = { version = "1.22.0", features = ["full"] }
 typetag = "0.2"
