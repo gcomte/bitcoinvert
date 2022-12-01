@@ -11,7 +11,7 @@ license = "MIT"
 
 [dependencies]
 async-trait = "0.1.58"
-clap = { version = "4.0.26", features = ["derive"] }
+clap = { version = "4.0.29", features = ["derive"] }
 env_logger = "0.9.3"
 exitcode = "1.1.2"
 home-config = { version = "0.4.0", features = ["yaml"] }
