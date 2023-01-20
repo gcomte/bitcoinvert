@@ -21,12 +21,11 @@ static mut EXCHANGE_RATE_API_CONSUMER: ExchangeRateProvider<blockchain_info_cons
         data: None,
     };
 
-#[tokio::main]
-async fn main() {
+fn main() {
     env_logger::init();
 
     unsafe {
-        EXCHANGE_RATE_API_CONSUMER.fetch().await;
+        EXCHANGE_RATE_API_CONSUMER.fetch();
     }
 
     let cli_input = CliInput::parse();
@@ -43,7 +42,7 @@ async fn main() {
         data: None,
     };
 
-    x.fetch().await;
+    x.fetch();
 
     // println!("{:?}: {}", Fiat::CHF, x.btc_value(&Fiat::CHF));
 

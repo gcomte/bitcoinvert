@@ -1,11 +1,8 @@
 use crate::currency::fiat::Fiat;
 use std::collections::HashMap;
-use std::future::Future;
 
 pub trait ExchangeRateApiConsumer {
-    type Output: Future<Output = HashMap<Fiat, f64>>;
-
-    fn fetch_api(&self) -> Self::Output;
+    fn fetch_api(&self) -> HashMap<Fiat, f64>;
 }
 
 pub struct ExchangeRateProvider<T: ExchangeRateApiConsumer> {
@@ -18,9 +15,9 @@ impl<T: ExchangeRateApiConsumer> ExchangeRateProvider<T> {
         1.0 / self.data.as_ref().unwrap().get(currency).unwrap()
     }
 
-    pub async fn fetch(&mut self) {
+    pub fn fetch(&mut self) {
         if self.data.is_none() {
-            self.data = Some(self.data_source.fetch_api().await);
+            self.data = Some(self.data_source.fetch_api());
         }
     }
 }

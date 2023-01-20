@@ -1,4 +1,3 @@
-use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 
@@ -15,7 +14,6 @@ pub enum BitcoinUnit {
 }
 
 #[typetag::serde]
-#[async_trait]
 impl Currency for BitcoinUnit {
     fn btc_value(&self) -> f64 {
         match &self {
