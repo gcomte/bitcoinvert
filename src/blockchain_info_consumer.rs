@@ -1,5 +1,5 @@
-use crate::currencies::Fiat;
 use crate::exchange_rate_provider::ExchangeRateApiConsumer;
+use crate::currencies::fiat::Fiat;
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::pin::Pin;

@@ -1,9 +1,11 @@
-use crate::EXCHANGE_RATE_API_CONSUMER;
-use async_trait::async_trait;
-use serde::{Deserialize, Serialize};
-use std::fmt::{Debug, Display, Error};
+use std::fmt::{Display, Error};
 use std::str::FromStr;
-use strum_macros::{Display, EnumString};
+
+use btc::BitcoinUnit;
+use fiat::Fiat;
+
+pub mod btc;
+pub mod fiat;
 
 #[typetag::serde()]
 pub trait Currency: Display {
@@ -28,70 +30,6 @@ impl Currencies {
         }
 
         Err(Default::default())
-    }
-}
-
-#[derive(Serialize, Deserialize, Debug, PartialEq, EnumString, Display)]
-#[strum(ascii_case_insensitive, serialize_all = "UPPERCASE")]
-pub enum BitcoinUnit {
-    BTC,  // bitcoin
-    MBTC, // milli-bitcoin
-    BITS, // μBTC, micro-bitcoin
-    SAT,  // satoshi
-    MSAT, // milli-satoshi
-}
-
-#[typetag::serde]
-#[async_trait]
-impl Currency for BitcoinUnit {
-    fn btc_value(&self) -> f64 {
-        match &self {
-            BitcoinUnit::BTC => 1.0,
-            BitcoinUnit::MBTC => 0.001,
-            BitcoinUnit::BITS => 0.000_001,
-            BitcoinUnit::SAT => 0.000_000_01,
-            BitcoinUnit::MSAT => 0.000_000_000_01,
-        }
-    }
-}
-
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Hash, EnumString, Display)]
-#[strum(ascii_case_insensitive, serialize_all = "UPPERCASE")]
-pub enum Fiat {
-    ARS,
-    AUD,
-    BRL,
-    CAD,
-    CHF,
-    CLP,
-    CNY,
-    CZK,
-    DKK,
-    EUR,
-    GBP,
-    HKD,
-    HRK,
-    HUF,
-    INR,
-    ISK,
-    JPY,
-    KRW,
-    NZD,
-    PLN,
-    RON,
-    RUB,
-    SEK,
-    SGD,
-    THB,
-    TRY,
-    TWD,
-    USD,
-}
-
-#[typetag::serde]
-impl Currency for Fiat {
-    fn btc_value(&self) -> f64 {
-        unsafe { EXCHANGE_RATE_API_CONSUMER.btc_value(self) }
     }
 }
 
