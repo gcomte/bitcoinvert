@@ -1,10 +1,11 @@
-use crate::currencies::Currencies;
-use crate::defaults::Defaults;
-use crate::Currency;
 use clap::Parser;
 use std::error::Error;
 use std::num::ParseFloatError;
 use std::{fmt, process};
+
+use crate::currencies::Currencies;
+use crate::defaults::Defaults;
+use crate::Currency;
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]

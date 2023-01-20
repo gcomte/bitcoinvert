@@ -3,8 +3,8 @@ use serde::{Deserialize, Serialize};
 use std::error::Error;
 use std::process;
 
-use crate::currencies::btc::BitcoinUnit;
-use crate::currencies::fiat::Fiat;
+use crate::currency::btc::BitcoinUnit;
+use crate::currency::fiat::Fiat;
 use crate::Currency;
 
 const DEFAULTS_FILE: &str = "defaults.yaml";

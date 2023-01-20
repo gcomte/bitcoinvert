@@ -1,21 +1,9 @@
-use std::fmt::{Display, Error};
+use std::fmt::Error;
 use std::str::FromStr;
 
-use btc::BitcoinUnit;
-use fiat::Fiat;
-
-pub mod btc;
-pub mod fiat;
-
-#[typetag::serde()]
-pub trait Currency: Display {
-    fn btc_value(&self) -> f64;
-}
-// #[typetag::serde()]
-// #[async_trait]
-// pub trait Currency: Display {
-//     async fn btc_value(&self, exchange_rate_api_consumer: &mut ExchangeRateProvider<ApiConsumer>) -> f64;
-// }
+use crate::currency::btc::BitcoinUnit;
+use crate::currency::fiat::Fiat;
+use crate::currency::Currency;
 
 pub struct Currencies;
 

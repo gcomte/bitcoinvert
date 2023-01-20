@@ -1,4 +1,4 @@
-use crate::currencies::fiat::Fiat;
+use crate::currency::fiat::Fiat;
 use std::collections::HashMap;
 use std::future::Future;
 

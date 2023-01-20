@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 
-use crate::currencies::Currency;
+use crate::currency::Currency;
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, EnumString, Display)]
 #[strum(ascii_case_insensitive, serialize_all = "UPPERCASE")]

@@ -1,11 +1,12 @@
 mod blockchain_info_consumer;
 pub mod cli_input;
 pub mod currencies;
+pub mod currency;
 pub mod defaults;
 pub mod exchange_rate_provider;
 
 use crate::cli_input::CliInput;
-use crate::currencies::Currency;
+use crate::currency::Currency;
 use crate::exchange_rate_provider::ExchangeRateProvider;
 
 // Okay this is so bad.

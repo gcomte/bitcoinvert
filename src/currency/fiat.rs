@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 
-use crate::currencies::Currency;
+use crate::currency::Currency;
 use crate::EXCHANGE_RATE_API_CONSUMER;
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Hash, EnumString, Display)]
