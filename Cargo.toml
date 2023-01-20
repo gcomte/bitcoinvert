@@ -10,7 +10,7 @@ license = "MIT"
 
 
 [dependencies]
-async-trait = "0.1.60"
+async-trait = "0.1.62"
 clap = { version = "4.0.32", features = ["derive"] }
 env_logger = "0.10.0"
 exitcode = "1.1.2"
