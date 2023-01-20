@@ -1,4 +1,5 @@
 use clap::Parser;
+use colored::*;
 use std::error::Error;
 use std::num::ParseFloatError;
 use std::{fmt, process};
@@ -82,7 +83,7 @@ impl CliInput {
             Some(currency) => match Currencies::parse(currency) {
                 Ok(currency) => currency,
                 Err(_) => {
-                    eprintln!("\"{}\" is not a valid currency!", currency);
+                    eprintln!("\"{}\" is not a valid (input) currency!", currency);
                     process::exit(exitcode::USAGE);
                 }
             },
@@ -95,7 +96,7 @@ impl CliInput {
             match Currencies::parse(string) {
                 Ok(currency) => return vec![currency],
                 Err(_) => {
-                    log::warn!("\"{}\" is not a valid currency! Continuing with multiple output currencies", string);
+                    eprintln!("\n{}\n", format!("\"{}\" is not a valid (output) currency! Showing multiple output currencies instead.", string).yellow());
                 }
             }
         }

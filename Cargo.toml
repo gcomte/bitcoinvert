@@ -11,6 +11,7 @@ license = "MIT"
 
 [dependencies]
 clap = { version = "4.1.1", features = ["derive"] }
+colored = "2.0.0"
 env_logger = "0.10.0"
 exitcode = "1.1.2"
 home-config = { version = "0.6.0", features = ["yaml"] }
