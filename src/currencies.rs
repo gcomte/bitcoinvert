@@ -1,4 +1,3 @@
-use std::fmt::Error;
 use std::str::FromStr;
 
 use crate::currency::btc::BitcoinUnit;
@@ -7,8 +6,14 @@ use crate::currency::Currency;
 
 pub struct Currencies;
 
+#[derive(Debug, PartialEq, Eq, thiserror::Error)]
+#[error("CurrencyParseError: {msg}")]
+pub struct CurrencyParseError {
+    msg: String,
+}
+
 impl Currencies {
-    pub fn parse(input: &str) -> Result<Box<dyn Currency>, Error> {
+    pub fn parse(input: &str) -> Result<Box<dyn Currency>, CurrencyParseError> {
         if let Ok(btc) = BitcoinUnit::from_str(input) {
             return Ok(Box::new(btc));
         }
@@ -17,7 +22,12 @@ impl Currencies {
             return Ok(Box::new(fiat));
         }
 
-        Err(Default::default())
+        Err(CurrencyParseError {
+            msg: format!(
+                "Unable to parse the following currency: {}",
+                input.to_string()
+            ),
+        })
     }
 }
 
@@ -50,9 +60,19 @@ mod tests {
     #[test]
     fn incorrect_use_should_return_error() {
         let currency_empty_string = Currencies::parse("");
-        let currency_non_existant = Currencies::parse("non-existant");
 
         assert!(currency_empty_string.is_err());
+        assert!(matches!(
+            currency_empty_string,
+            Err(CurrencyParseError { msg: _ })
+        ));
+
+        let currency_non_existant = Currencies::parse("non-existant");
+
         assert!(currency_non_existant.is_err());
+        assert!(matches!(
+            currency_non_existant,
+            Err(CurrencyParseError { msg: _ })
+        ));
     }
 }
