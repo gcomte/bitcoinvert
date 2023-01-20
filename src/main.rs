@@ -1,9 +1,8 @@
-mod blockchain_info_consumer;
 pub mod cli_input;
 pub mod currencies;
 pub mod currency;
 pub mod defaults;
-pub mod exchange_rate_provider;
+pub mod fiat_rates;
 
 use crate::cli_input::CliInput;
 use crate::currency::Currency;

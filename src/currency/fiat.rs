@@ -1,9 +1,9 @@
-use crate::blockchain_info_consumer;
+use crate::fiat_rates::blockchain_info_consumer;
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 
 use crate::currency::Currency;
-use crate::exchange_rate_provider::ExchangeRateProvider;
+use crate::fiat_rates::exchange_rate_provider::ExchangeRateProvider;
 
 // Static to have an easy way of caching the exchange rates.
 static mut EXCHANGE_RATE_PROVIDER: ExchangeRateProvider<blockchain_info_consumer::ApiConsumer> =

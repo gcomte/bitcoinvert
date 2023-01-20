@@ -1,7 +1,8 @@
-use crate::currency::fiat::Fiat;
-use crate::exchange_rate_provider::ExchangeRateApiConsumer;
 use serde::Deserialize;
 use std::collections::HashMap;
+
+use crate::currency::fiat::Fiat;
+use crate::fiat_rates::exchange_rate_provider::ExchangeRateApiConsumer;
 
 const SOURCE_API: &str = "https://blockchain.info/ticker";
 
