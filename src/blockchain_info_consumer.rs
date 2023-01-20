@@ -10,7 +10,7 @@ pub struct ApiConsumer;
 
 #[allow(dead_code)]
 #[derive(Deserialize, Debug)]
-pub struct Ticker {
+struct Ticker {
     #[serde(rename(deserialize = "15m"))]
     avg: f64,
     last: f64,
@@ -21,7 +21,7 @@ pub struct Ticker {
 
 #[allow(dead_code)]
 #[derive(Deserialize, Debug)]
-pub struct Currencies {
+struct Currencies {
     #[serde(rename(deserialize = "ARS"))]
     ars: Ticker,
     #[serde(rename(deserialize = "AUD"))]
@@ -81,7 +81,7 @@ pub struct Currencies {
 }
 
 impl ApiConsumer {
-    pub async fn fetch_data() -> Currencies {
+    async fn fetch_data() -> Currencies {
         log::debug!("Request exchange rate data from {}", SOURCE_API);
         let error_message = format!("Unable to request data from {}!", SOURCE_API);
         let response = reqwest::get(SOURCE_API).await.expect(&error_message);
