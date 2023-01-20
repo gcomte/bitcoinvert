@@ -7,26 +7,9 @@ pub mod exchange_rate_provider;
 
 use crate::cli_input::CliInput;
 use crate::currency::Currency;
-use crate::exchange_rate_provider::ExchangeRateProvider;
-
-// Okay this is so bad.
-// The initial idea was to make crate::currencies::Currency having a generic implementing
-// crate::exchange_rate_provider::ExchangeRateApiConsumer, to fetch the exchange rates.
-// The problem is that typetag::serde() does not (yet) support generics.
-// Adding the crate::exchange_rate_provider::ExchangeRateApiConsumer directly to crate::currencies::Fiat
-// does not work either, because Fiat is an enum.
-static mut EXCHANGE_RATE_API_CONSUMER: ExchangeRateProvider<blockchain_info_consumer::ApiConsumer> =
-    ExchangeRateProvider {
-        data_source: blockchain_info_consumer::ApiConsumer,
-        data: None,
-    };
 
 fn main() {
     env_logger::init();
-
-    unsafe {
-        EXCHANGE_RATE_API_CONSUMER.fetch();
-    }
 
     let cli_input = CliInput::parse();
 
@@ -36,13 +19,6 @@ fn main() {
     // first: let's get the amount of sats.
 
     // each currency has an amount of sats it's worth.
-
-    let mut x = ExchangeRateProvider {
-        data_source: blockchain_info_consumer::ApiConsumer,
-        data: None,
-    };
-
-    x.fetch();
 
     // println!("{:?}: {}", Fiat::CHF, x.btc_value(&Fiat::CHF));
 

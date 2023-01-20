@@ -11,11 +11,13 @@ pub struct ExchangeRateProvider<T: ExchangeRateApiConsumer> {
 }
 
 impl<T: ExchangeRateApiConsumer> ExchangeRateProvider<T> {
-    pub fn btc_value(&self, currency: &Fiat) -> f64 {
+    pub fn btc_value(&mut self, currency: &Fiat) -> f64 {
+        self.fetch();
+
         1.0 / self.data.as_ref().unwrap().get(currency).unwrap()
     }
 
-    pub fn fetch(&mut self) {
+    fn fetch(&mut self) {
         if self.data.is_none() {
             self.data = Some(self.data_source.fetch_api());
         }

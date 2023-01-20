@@ -1,8 +1,16 @@
+use crate::blockchain_info_consumer;
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 
 use crate::currency::Currency;
-use crate::EXCHANGE_RATE_API_CONSUMER;
+use crate::exchange_rate_provider::ExchangeRateProvider;
+
+// Static to have an easy way of caching the exchange rates.
+static mut EXCHANGE_RATE_PROVIDER: ExchangeRateProvider<blockchain_info_consumer::ApiConsumer> =
+    ExchangeRateProvider {
+        data_source: blockchain_info_consumer::ApiConsumer,
+        data: None,
+    };
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Hash, EnumString, Display)]
 #[strum(ascii_case_insensitive, serialize_all = "UPPERCASE")]
@@ -40,6 +48,28 @@ pub enum Fiat {
 #[typetag::serde]
 impl Currency for Fiat {
     fn btc_value(&self) -> f64 {
-        unsafe { EXCHANGE_RATE_API_CONSUMER.btc_value(self) }
+        unsafe { EXCHANGE_RATE_PROVIDER.btc_value(self) }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::time::Instant;
+
+    #[test]
+    fn test_exchange_rate_caching() {
+        let start = Instant::now();
+
+        // First call should take a while.
+        let btc_value = Fiat::USD.btc_value();
+        let elapsed_first_call = start.elapsed().as_micros();
+        assert!(btc_value > 0.0);
+        assert!(elapsed_first_call > 1000);
+
+        // Second call should be fast (even when looking up another fiat currency).
+        let btc_value = Fiat::EUR.btc_value();
+        assert!(btc_value > 0.0);
+        assert!(start.elapsed().as_micros() - elapsed_first_call < 1000);
     }
 }
