@@ -28,7 +28,7 @@ impl Defaults {
     }
 
     pub fn retrieve() -> Defaults {
-        let config = HomeConfig::new(env!("CARGO_PKG_NAME"), DEFAULTS_FILE);
+        let config = HomeConfig::with_config_dir(env!("CARGO_PKG_NAME"), DEFAULTS_FILE);
 
         if !config.path().exists() {
             log::debug!(
