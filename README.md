@@ -54,7 +54,7 @@ If you want, use an alias for `bitcoinvert`, like `bcv`:
 `echo "alias bcv='bitcoinvert'" >> ~/.bash_aliases`
 
 #### No build for your architecture?
-If you don't find a build for your architecture, compile the binary yourself:    
+If you don't find a binary for your architecture, compile it yourself:    
 `cargo build --release`
 
 You can then find the binary here:  
@@ -170,4 +170,4 @@ unit | description
 
 Contributions are welcome!  
 Please craft a PR and direct it towards the `develop` branch.  
-The `master` only contains stable versions.
+The `master` contains stable versions only.
