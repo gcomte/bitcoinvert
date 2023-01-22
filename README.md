@@ -53,6 +53,15 @@ by leveraging the [blockchain.info ticker API](https://blockchain.info/ticker).
 If you want, use an alias for `bitcoinvert`, like `bcv`:  
 `echo "alias bcv='bitcoinvert'" >> ~/.bash_aliases`
 
+#### No build for your architecture?
+If you don't find a build for your architecture, compile the binary yourself:    
+`cargo build --release`
+
+You can then find the binary here:  
+`target/release/bitcoinvert`
+
+Continue with `step 3` from above.
+
 ## User manual
 
 `bitcoinvert [OPTIONS] [AMOUNT] [INPUT_CURRENCY] [OUTPUT_CURRENCY]`
