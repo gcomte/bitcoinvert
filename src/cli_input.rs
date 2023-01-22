@@ -17,12 +17,18 @@ pub struct Args {
     pub input_currency: Option<String>,
     /// The currency to convert to
     pub output_currency: Option<String>,
+    #[arg(short, long, help = "Prints a clean number; no separators, no unit.")]
+    clean: bool,
+    #[arg(short, long, help = "Rounds the output to the nearest integer")]
+    integer: bool,
 }
 
 pub struct CliInput {
     pub amount: f64,
     pub input_currency: Box<dyn Currency>,
     pub output_currencies: Vec<Box<dyn Currency>>,
+    pub clean: bool,
+    pub integer: bool,
 }
 
 #[derive(Debug)]
@@ -62,6 +68,8 @@ impl From<Args> for CliInput {
             amount: Self::parse_amount(args.amount),
             input_currency: Self::parse_input_currency(&args.input_currency),
             output_currencies: Self::parse_output_currency(&args.output_currency),
+            clean: args.clean,
+            integer: args.integer,
         }
     }
 }

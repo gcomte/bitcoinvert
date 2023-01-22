@@ -3,6 +3,9 @@ pub mod currencies;
 pub mod currency;
 pub mod defaults;
 pub mod fiat_rates;
+mod print;
+
+use colored::*;
 
 use crate::cli_input::CliInput;
 use crate::currency::Currency;
@@ -11,28 +14,32 @@ fn main() {
     env_logger::init();
 
     let cli_input = CliInput::parse();
-
-    println!("input currency: {}", cli_input.amount);
-    println!("input currency: {:?}", cli_input.input_currency.to_string());
-
-    // first: let's get the amount of sats.
-
-    // each currency has an amount of sats it's worth.
-
-    // println!("{:?}: {}", Fiat::CHF, x.btc_value(&Fiat::CHF));
-
-    // println!(
-    //     "output currencies: {:?}",
-    //     cli_input
-    //         .output_currencies
-    //         .iter()
-    //         .map(|c| format!("{}: {}", &c, &c.btc_value()))
-    //         .collect::<Vec<String>>()
-    // );
-
     let value_in_btc = cli_input.amount * cli_input.input_currency.btc_value();
 
-    for currency in cli_input.output_currencies {
-        println!("{}: {}", currency, value_in_btc / currency.btc_value());
+    if cli_input.output_currencies.len() == 1 {
+        let mut output_value = value_in_btc / cli_input.output_currencies[0].btc_value();
+
+        if cli_input.integer {
+            output_value = output_value.round();
+        }
+
+        print::single_line(
+            output_value,
+            &cli_input.output_currencies[0],
+            cli_input.clean,
+        );
+    } else {
+        if cli_input.clean {
+            eprintln!(
+                "\n{}\n",
+                format!("Cannot use clean mode for multi currency output").yellow()
+            );
+        }
+
+        print::multi_line(
+            value_in_btc,
+            &cli_input.output_currencies,
+            cli_input.integer,
+        );
     }
 }
