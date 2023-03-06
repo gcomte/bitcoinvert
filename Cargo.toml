@@ -22,6 +22,6 @@ serde_yaml = "0.9.17"
 strum = { version = "0.24", features = ["derive"] }
 strum_macros = "0.24"
 tabled = "0.10.0"
-thiserror = "1.0.38"
+thiserror = "1.0.39"
 thousands = "0.2.0"
 typetag = "0.2"
