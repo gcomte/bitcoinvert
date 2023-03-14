@@ -1,5 +1,14 @@
-on: [push, pull_request]
 name: Static code analysis
+
+on:
+  push:
+    branches:
+      - master
+      - develop
+  pull_request:
+  schedule:
+    - cron: '21 4 * * *' # every day at 4:21 AM UTC
+
 jobs:
   security-audit:
     name: Security audit
