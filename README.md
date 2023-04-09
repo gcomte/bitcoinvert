@@ -175,6 +175,4 @@ unit | description
 
 ## Contribute
 
-Contributions are welcome!  
-Please craft a PR and direct it towards the `develop` branch.  
-The `master` contains stable versions only.
+Pull Requests are welcome!  
