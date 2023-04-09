@@ -47,14 +47,21 @@ by leveraging the [blockchain.info ticker API](https://blockchain.info/ticker).
 ## Installation
 ### Linux
 1. Download Linux binary from [Releases](https://github.com/gcomte/bitcoinvert/releases)
-2. unzip file: `tar -xvf _downloaded_file.tar.gz`
+2. unzip file: `tar -xvf bitcoinvert[...].tar.gz`
 3. move file to executable path: `sudo install -m 0755 -o root -g root -t /usr/local/bin bitcoinvert`
 
+### MacOS
+1. Download MacOS binary from [Releases](https://github.com/gcomte/bitcoinvert/releases)
+2. unzip file `unzip bitcoinvert[...].zip`
+3. move file to executable path: `sudo mv bitcoinvert /usr/local/bin`
+
+
 If you want, use an alias for `bitcoinvert`, like `bcv`:  
-`echo "alias bcv='bitcoinvert'" >> ~/.bash_aliases`
+`echo "alias bcv='bitcoinvert'" >> ~/.bash_aliases` for bash
+`echo "alias bcv='bitcoinvert'" >> ~/.zshrc` for zsh
 
 #### No build for your architecture?
-If you don't find a build for your architecture, compile the binary yourself:    
+If you don't find a binary for your architecture, compile it yourself:    
 `cargo build --release`
 
 You can then find the binary here:  
@@ -168,6 +175,4 @@ unit | description
 
 ## Contribute
 
-Contributions are welcome!  
-Please craft a PR and direct it towards the `develop` branch.  
-The `master` only contains stable versions.
+Pull Requests are welcome!  
