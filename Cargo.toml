@@ -21,7 +21,7 @@ serde = { version = "1.0.160", features = ["derive"] }
 serde_yaml = "0.9.21"
 strum = { version = "0.24", features = ["derive"] }
 strum_macros = "0.24"
-tabled = "0.10.0"
+tabled = "0.11.0"
 thiserror = "1.0.40"
 thousands = "0.2.0"
 typetag = "0.2"
