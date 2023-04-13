@@ -1,4 +1,5 @@
-use tabled::{Style, Table, Tabled};
+use tabled::settings::Style;
+use tabled::{Table, Tabled};
 use thousands::Separable;
 
 use crate::currency::Currency;
