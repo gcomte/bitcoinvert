@@ -25,14 +25,16 @@ fn main() {
 
         print::single_line(
             output_value,
-            &cli_input.output_currencies[0],
+            &*cli_input.output_currencies[0],
             cli_input.clean,
         );
     } else {
         if cli_input.clean {
             eprintln!(
                 "\n{}\n",
-                format!("Cannot use clean mode for multi currency output").yellow()
+                "Cannot use clean mode for multi currency output"
+                    .to_string()
+                    .yellow()
             );
         }
 

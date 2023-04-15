@@ -23,10 +23,7 @@ impl Currencies {
         }
 
         Err(CurrencyParseError {
-            msg: format!(
-                "Unable to parse the following currency: {}",
-                input.to_string()
-            ),
+            msg: format!("Unable to parse the following currency: {}", input),
         })
     }
 }

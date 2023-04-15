@@ -30,7 +30,7 @@ pub fn multi_line(value_in_btc: f64, currencies: &Vec<Box<dyn Currency>>, intege
     println!("{}", table);
 }
 
-pub fn single_line(output_value: f64, currency: &Box<dyn Currency>, print_denomination: bool) {
+pub fn single_line(output_value: f64, currency: &dyn Currency, print_denomination: bool) {
     if print_denomination {
         println!("{}", output_value);
     } else {

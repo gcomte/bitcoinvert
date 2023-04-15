@@ -43,12 +43,13 @@ fn test_clean_and_integer_mode() {
 
 #[test]
 #[ignore] // only run in CI, because local installations may have different currencies configured
+#[allow(clippy::get_first)]
 fn test_format() {
     let mut cmd = Command::cargo_bin("bitcoinvert").unwrap();
 
     let stdout = cmd.arg("-i").assert().get_output().stdout.clone();
     let stdout = String::from_utf8(stdout).unwrap();
-    let stdout_lines: Vec<_> = stdout.split("\n").collect();
+    let stdout_lines: Vec<_> = stdout.split('\n').collect();
 
     assert_eq!(stdout_lines.get(0).unwrap(), &" unit | amount          "); // table header
     assert_eq!(stdout_lines.get(1).unwrap(), &"------+-----------------"); // header separator
