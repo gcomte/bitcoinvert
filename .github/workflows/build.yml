@@ -25,3 +25,5 @@ jobs:
         run: cargo build --verbose
       - name: Run unit tests
         run: cargo test --verbose
+      - name: Run integration tests
+        run: cargo test --test '*' -- --include-ignored

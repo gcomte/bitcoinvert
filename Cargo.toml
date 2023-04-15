@@ -25,3 +25,6 @@ tabled = "0.11.1"
 thiserror = "1.0.40"
 thousands = "0.2.0"
 typetag = "0.2"
+
+[dev-dependencies]
+assert_cmd = "2.0.11"
