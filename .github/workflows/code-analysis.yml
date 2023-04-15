@@ -33,7 +33,7 @@ jobs:
           toolchain: stable
           components: rustfmt
       - name: Check code formatting
-        run: cargo fmt -- --check
+        run: cargo fmt --check --all
   clippy_check:
     name: Clippy check
     runs-on: ubuntu-latest
@@ -45,7 +45,7 @@ jobs:
           toolchain: stable
           components: clippy
       - name: Clippy
-        run: cargo clippy
+        run: cargo clippy --all-targets
   unused_dependencies:
     name: Look for unused dependencies
     runs-on: ubuntu-latest
