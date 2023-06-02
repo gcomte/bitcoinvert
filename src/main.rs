@@ -13,6 +13,8 @@ use crate::currency::Currency;
 fn main() {
     env_logger::init();
 
+    if 100 > i32::MAX {} // Nevermind. I'm just testing whether the GitHub clippy check works
+
     let cli_input = CliInput::parse();
     let value_in_btc = cli_input.amount * cli_input.input_currency.btc_value();
 
