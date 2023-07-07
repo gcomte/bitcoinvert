@@ -17,7 +17,7 @@ exitcode = "1.1.2"
 home-config = { version = "0.6.0", features = ["yaml"] }
 log = "0.4.19"
 reqwest = { version = "0.11.18", features = ["blocking", "json"] }
-serde = { version = "1.0.164", features = ["derive"] }
+serde = { version = "1.0.167", features = ["derive"] }
 serde_yaml = "0.9.21"
 strum = { version = "0.25", features = ["derive"] }
 strum_macros = "0.25"
