@@ -131,6 +131,7 @@ dependencies = [
  "reqwest",
  "serde",
  "serde_yaml",
+ "si-unit-prefix",
  "strum",
  "strum_macros",
  "tabled",
@@ -1180,6 +1181,15 @@ dependencies = [
  "ryu",
  "serde",
  "unsafe-libyaml",
+]
+
+[[package]]
+name = "si-unit-prefix"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9e70f7747805ca30c09b02c7503975d1d7864e43d5c88add41e9d461a6dd758c"
+dependencies = [
+ "serde",
 ]
 
 [[package]]

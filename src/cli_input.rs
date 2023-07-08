@@ -1,5 +1,6 @@
 use clap::Parser;
 use colored::*;
+use si_unit_prefix::SiUnitPrefix;
 use std::error::Error;
 use std::num::ParseFloatError;
 use std::{fmt, process};
@@ -11,7 +12,7 @@ use crate::Currency;
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 pub struct Args {
-    /// The amount of money to convert
+    /// The amount of money to convert (SI units are supported => 1k = 1,000, 1M = 1,000,000, etc.)
     pub amount: Option<String>,
     /// The currency to convert from
     pub input_currency: Option<String>,
@@ -81,13 +82,26 @@ impl CliInput {
 
     fn parse_amount(input: Option<String>) -> f64 {
         match input {
-            Some(amount) => match amount.parse::<f64>() {
-                Ok(amount) => amount,
-                Err(_) => {
-                    eprintln!("\"{}\" is not a valid amount!", amount);
-                    process::exit(exitcode::USAGE);
+            Some(mut amount) => {
+                // check whether last character is an SI unit
+                let mut multiplier = 1.0;
+                let last_char = amount.chars().last().unwrap();
+
+                if let Some(si_prefix) = SiUnitPrefix::parse_from_str(&last_char.to_string()) {
+                    multiplier = si_prefix.as_f64();
+
+                    // remove last character
+                    amount = amount[..amount.len() - 1].to_string();
                 }
-            },
+
+                match amount.parse::<f64>() {
+                    Ok(amount) => amount * multiplier,
+                    Err(_) => {
+                        eprintln!("\"{}\" is not a valid amount!", amount);
+                        process::exit(exitcode::USAGE);
+                    }
+                }
+            }
             None => Defaults::get_default_amount(),
         }
     }

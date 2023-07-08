@@ -86,6 +86,13 @@ This will remove the commas and the unit and simply return `100000000`.
 If you want to get rid of the floating point and display rounded integers instead, use the `-i` flag:  
 `bitcoinvert -i 1234567 SAT USD`
 
+### Using SI suffixes for the amount
+For very big or small numbers, it's easier to use SI suffixes than adding a lot of zeros.  
+`bitcoinvert 1M SAT USD` => convert 1,000,000 SAT to USD  
+`bitcoinvert 1.23k SAT` => convert 1,230 SAT
+
+Find a list of possible suffixes [here](https://en.wikipedia.org/wiki/Metric_prefix#List_of_SI_prefixes).
+
 ### Multiple output currencies
 If you don't define the output currency, a table of various currencies will be displayed instead:  
 `bitcoinvert -i 1 BTC`
