@@ -12,7 +12,7 @@ use crate::Currency;
 #[clap(author, version, about, long_about = None)]
 pub struct Args {
     /// The amount of money to convert
-    pub amount: Option<f64>,
+    pub amount: Option<String>,
     /// The currency to convert from
     pub input_currency: Option<String>,
     /// The currency to convert to
@@ -79,9 +79,15 @@ impl CliInput {
         Args::parse().into()
     }
 
-    fn parse_amount(input: Option<f64>) -> f64 {
+    fn parse_amount(input: Option<String>) -> f64 {
         match input {
-            Some(amount) => amount,
+            Some(amount) => match amount.parse::<f64>() {
+                Ok(amount) => amount,
+                Err(_) => {
+                    eprintln!("\"{}\" is not a valid amount!", amount);
+                    process::exit(exitcode::USAGE);
+                }
+            },
             None => Defaults::get_default_amount(),
         }
     }
