@@ -42,6 +42,44 @@ fn test_clean_and_integer_mode() {
 }
 
 #[test]
+fn test_amount_input_validation() {
+    // Throw error for arbitrary string inputs
+    let mut cmd = Command::cargo_bin("bitcoinvert").unwrap();
+    let arbitrary_string = "twentyone";
+    cmd.args(vec![arbitrary_string, "SAT", "BTC"])
+        .assert()
+        .stderr(format!("\"{arbitrary_string}\" is not a valid amount!\n"));
+
+    // Disallow using SI symbols as prefix
+    let mut cmd = Command::cargo_bin("bitcoinvert").unwrap();
+    let si_prefix = "M1";
+    cmd.args(vec![si_prefix, "SAT", "BTC"])
+        .assert()
+        .stderr(format!("\"{si_prefix}\" is not a valid amount!\n"));
+
+    // Allow using SI symbols as suffix
+    let mut cmd = Command::cargo_bin("bitcoinvert").unwrap();
+    let si_suffix = "1M";
+    cmd.args(vec![&si_suffix, "SAT", "BTC"])
+        .assert()
+        .stdout(format!("0.01 BTC\n"));
+
+    // Allow using floating point numbers
+    let mut cmd = Command::cargo_bin("bitcoinvert").unwrap();
+    let si_suffix_floating = "0.00012345";
+    cmd.args(vec!["-ci", &si_suffix_floating, "BTC", "SAT"])
+        .assert()
+        .stdout("12345\n");
+
+    // Allow using floating point numbers in combination with SI symbols as suffix
+    let mut cmd = Command::cargo_bin("bitcoinvert").unwrap();
+    let si_suffix_floating = "12.34k";
+    cmd.args(vec![&si_suffix_floating, "SAT", "BTC"])
+        .assert()
+        .stdout("0.0001234 BTC\n");
+}
+
+#[test]
 #[ignore] // only run in CI, because local installations may have different currencies configured
 #[allow(clippy::get_first)]
 fn test_format() {
