@@ -1,5 +1,6 @@
 use clap::Parser;
 use colored::*;
+use regex::Regex;
 use si_unit_prefix::SiUnitPrefix;
 use std::error::Error;
 use std::num::ParseFloatError;
@@ -8,6 +9,8 @@ use std::{fmt, process};
 use crate::currencies::Currencies;
 use crate::defaults::Defaults;
 use crate::Currency;
+
+const THOUSAND_SEPARATOR_PATTERN: &str = r",|\s|'";
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
@@ -94,7 +97,7 @@ impl CliInput {
                     amount = amount[..amount.len() - 1].to_string();
                 }
 
-                match amount.parse::<f64>() {
+                match Self::strip_thousand_separators(&amount).parse::<f64>() {
                     Ok(amount) => amount * multiplier,
                     Err(_) => {
                         eprintln!("\"{}\" is not a valid amount!", amount);
@@ -130,5 +133,10 @@ impl CliInput {
         }
 
         Defaults::get_default_output_currencies()
+    }
+
+    fn strip_thousand_separators(amount: &str) -> String {
+        let re = Regex::new(THOUSAND_SEPARATOR_PATTERN).unwrap();
+        re.replace_all(amount, "").to_string()
     }
 }
