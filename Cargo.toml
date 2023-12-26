@@ -24,7 +24,7 @@ si-unit-prefix = "1.0.0"
 strum = { version = "0.25", features = ["derive"] }
 strum_macros = "0.25"
 tabled = "0.15.0"
-thiserror = "1.0.51"
+thiserror = "1.0.52"
 thousands = "0.2.0"
 typetag = "0.2"
 
