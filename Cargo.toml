@@ -12,7 +12,7 @@ license = "MIT"
 [dependencies]
 clap = { version = "4.4.18", features = ["derive"] }
 colored = "2.1.0"
-env_logger = "0.10.1"
+env_logger = "0.10.2"
 exitcode = "1.1.2"
 home-config = { version = "0.6.0", features = ["yaml"] }
 log = "0.4.20"
