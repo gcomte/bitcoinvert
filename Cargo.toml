@@ -18,7 +18,7 @@ home-config = { version = "0.6.0", features = ["yaml"] }
 log = "0.4.21"
 regex = "1.10.4"
 reqwest = { version = "0.12.2", features = ["blocking", "json"] }
-serde = { version = "1.0.201", features = ["derive"] }
+serde = { version = "1.0.203", features = ["derive"] }
 serde_yaml = "0.9.33"
 si-unit-prefix = "1.0.0"
 strum = { version = "0.26", features = ["derive"] }
