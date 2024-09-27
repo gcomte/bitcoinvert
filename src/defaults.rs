@@ -53,7 +53,7 @@ impl Defaults {
     }
 
     fn load_defaults(config: &HomeConfig) -> Result<Defaults, Box<dyn Error>> {
-        let defaults: Defaults = serde_yaml::from_str(&config.read_to_string()?)?;
+        let defaults: Defaults = serde_yml::from_str(&config.read_to_string()?)?;
         log::debug!(
             "Reading contents of file {} --> input amount: {}, input currency: {}, output currencies: [{}]",
             config.path().display(),
