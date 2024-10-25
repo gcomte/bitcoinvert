@@ -94,6 +94,61 @@ fn test_amount_input_validation() {
 }
 
 #[test]
+fn test_amount_output_rounding() {
+    let mut cmd = Command::cargo_bin("bitcoinvert").unwrap();
+    cmd.args(vec!["-c", "0.12345", "SAT", "MSAT"])
+        .assert()
+        .stdout("123\n");
+
+    let mut cmd = Command::cargo_bin("bitcoinvert").unwrap();
+    cmd.args(vec!["-c", "0.6656", "SAT", "MSAT"])
+        .assert()
+        .stdout("666\n");
+
+    let mut cmd = Command::cargo_bin("bitcoinvert").unwrap();
+    cmd.args(vec!["-c", "90", "SAT", "BTC"])
+        .assert()
+        .stdout("0.0000009\n");
+
+    let mut cmd = Command::cargo_bin("bitcoinvert").unwrap();
+    let stdout = cmd
+        .args(vec!["-c", "0.123", "BTC", "USD"])
+        .assert()
+        .get_output()
+        .stdout
+        .clone();
+
+    let usd_value = String::from_utf8(stdout)
+        .unwrap()
+        .trim()
+        .parse::<f64>()
+        .unwrap();
+
+    let usd_value_scalar = (usd_value * 100.0).round();
+    let reconstructed = usd_value_scalar / 100.0;
+    assert!(
+        (usd_value - reconstructed).abs() < f64::EPSILON,
+        "Number has more than two decimal places"
+    );
+
+    let mut cmd = Command::cargo_bin("bitcoinvert").unwrap();
+    let stdout = cmd
+        .args(vec!["-c", "21", "BTC", "JPY"])
+        .assert()
+        .get_output()
+        .stdout
+        .clone();
+
+    let jpy_value = String::from_utf8(stdout)
+        .unwrap()
+        .trim()
+        .parse::<f64>()
+        .unwrap();
+
+    assert_eq!(jpy_value.round(), jpy_value, "Number has decimal places");
+}
+
+#[test]
 #[ignore] // only run in CI, because local installations may have different currencies configured
 #[allow(clippy::get_first)]
 fn test_format() {
