@@ -27,7 +27,6 @@ pub enum Fiat {
     EUR,
     GBP,
     HKD,
-    HRK,
     HUF,
     INR,
     ISK,
