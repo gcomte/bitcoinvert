@@ -46,8 +46,6 @@ struct Currencies {
     gbp: Ticker,
     #[serde(rename(deserialize = "HKD"))]
     hkd: Ticker,
-    #[serde(rename(deserialize = "HRK"))]
-    hrk: Ticker,
     #[serde(rename(deserialize = "HUF"))]
     huf: Ticker,
     #[serde(rename(deserialize = "INR"))]
@@ -109,7 +107,6 @@ impl ExchangeRateApiConsumer for ApiConsumer {
         map.insert(Fiat::EUR, currencies.eur.last);
         map.insert(Fiat::GBP, currencies.gbp.last);
         map.insert(Fiat::HKD, currencies.hkd.last);
-        map.insert(Fiat::HRK, currencies.hrk.last);
         map.insert(Fiat::HUF, currencies.huf.last);
         map.insert(Fiat::INR, currencies.inr.last);
         map.insert(Fiat::ISK, currencies.isk.last);

@@ -163,7 +163,6 @@ unit | description
 `EUR` | Euro
 `GBP` | Pound sterling
 `HKD` | Hong Kong dollar
-`HRK` | Croatian kuna
 `HUF` | Hungarian forint
 `INR` | Indian rupee
 `ISK` | Icelandic króna
