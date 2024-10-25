@@ -49,6 +49,33 @@ impl Currency for Fiat {
     fn btc_value(&self) -> f64 {
         unsafe { EXCHANGE_RATE_PROVIDER.btc_value(self) }
     }
+
+    fn decimal_places(&self) -> u8 {
+        match self {
+            Fiat::AUD
+            | Fiat::BRL
+            | Fiat::CAD
+            | Fiat::CHF
+            | Fiat::CNY
+            | Fiat::CZK
+            | Fiat::DKK
+            | Fiat::EUR
+            | Fiat::GBP
+            | Fiat::HKD
+            | Fiat::INR
+            | Fiat::NZD
+            | Fiat::PLN
+            | Fiat::RON
+            | Fiat::RUB
+            | Fiat::SEK
+            | Fiat::SGD
+            | Fiat::THB
+            | Fiat::TRY
+            | Fiat::TWD
+            | Fiat::USD => 2,
+            Fiat::ARS | Fiat::HUF | Fiat::JPY | Fiat::CLP | Fiat::ISK | Fiat::KRW => 0,
+        }
+    }
 }
 
 #[cfg(test)]
