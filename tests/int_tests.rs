@@ -81,9 +81,9 @@ fn test_amount_input_validation() {
     // Allow using floating point numbers with thousand separators
     let mut cmd = Command::cargo_bin("bitcoinvert").unwrap();
     let thousand_separated_float = "1'000 000,000.25";
-    cmd.args(vec![&thousand_separated_float, "SAT", "BTC"])
+    cmd.args(vec![&thousand_separated_float, "BITS", "BTC"])
         .assert()
-        .stdout("10.0000000025 BTC\n");
+        .stdout("1,000.00000025 BTC\n");
 
     // Print correct error message when only supplying thousand separators
     let mut cmd = Command::cargo_bin("bitcoinvert").unwrap();
