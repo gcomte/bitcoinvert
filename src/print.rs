@@ -17,6 +17,8 @@ pub fn multi_line(value_in_btc: f64, currencies: &Vec<Box<dyn Currency>>, intege
         let mut output_value = value_in_btc / currency.btc_value();
         if integer {
             output_value = output_value.round();
+        } else {
+            output_value = currency.round_value(output_value);
         }
 
         data.push(TableRow {

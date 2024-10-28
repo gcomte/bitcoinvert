@@ -24,4 +24,14 @@ impl Currency for BitcoinUnit {
             BitcoinUnit::MSAT => 0.000_000_000_01,
         }
     }
+
+    fn decimal_places(&self) -> u8 {
+        match self {
+            BitcoinUnit::BTC => 8,
+            BitcoinUnit::MBTC => 5,
+            BitcoinUnit::BITS => 2,
+            BitcoinUnit::SAT => 3,
+            BitcoinUnit::MSAT => 0,
+        }
+    }
 }

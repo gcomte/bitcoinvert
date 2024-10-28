@@ -21,6 +21,8 @@ fn main() {
 
         if cli_input.integer {
             output_value = output_value.round();
+        } else {
+            output_value = cli_input.output_currencies[0].round_value(output_value);
         }
 
         print::single_line(
