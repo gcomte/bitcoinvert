@@ -1,16 +1,20 @@
 use crate::fiat_rates::blockchain_info_consumer;
+use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
+use std::sync::Mutex;
 use strum_macros::{Display, EnumString};
 
 use crate::currency::Currency;
 use crate::fiat_rates::exchange_rate_provider::ExchangeRateProvider;
 
 // Static to have an easy way of caching the exchange rates.
-static mut EXCHANGE_RATE_PROVIDER: ExchangeRateProvider<blockchain_info_consumer::ApiConsumer> =
-    ExchangeRateProvider {
-        data_source: blockchain_info_consumer::ApiConsumer,
-        data: None,
-    };
+lazy_static! {
+    static ref EXCHANGE_RATE_PROVIDER: Mutex<ExchangeRateProvider<blockchain_info_consumer::ApiConsumer>> =
+        Mutex::new(ExchangeRateProvider {
+            data_source: blockchain_info_consumer::ApiConsumer,
+            data: None,
+        });
+}
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Hash, EnumString, Display)]
 #[strum(ascii_case_insensitive, serialize_all = "UPPERCASE")]
@@ -47,7 +51,10 @@ pub enum Fiat {
 #[typetag::serde]
 impl Currency for Fiat {
     fn btc_value(&self) -> f64 {
-        unsafe { EXCHANGE_RATE_PROVIDER.btc_value(self) }
+        EXCHANGE_RATE_PROVIDER
+            .lock()
+            .expect("Failed to lock EXCHANGE_RATE_PROVIDER")
+            .btc_value(self)
     }
 
     fn decimal_places(&self) -> u8 {
