@@ -140,6 +140,7 @@ dependencies = [
  "env_logger",
  "exitcode",
  "home-config",
+ "lazy_static",
  "log",
  "regex",
  "reqwest",
