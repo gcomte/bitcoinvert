@@ -15,7 +15,7 @@ colored = "2.2.0"
 env_logger = "0.11.5"
 exitcode = "1.1.2"
 home-config = { version = "0.6.0", features = ["yaml"] }
-log = "0.4.22"
+log = "0.4.25"
 regex = "1.11.1"
 reqwest = { version = "0.12.9", features = ["blocking", "json"] }
 serde = { version = "1.0.216", features = ["derive"] }
