@@ -21,7 +21,7 @@ reqwest = { version = "0.12.12", features = ["blocking", "json"] }
 serde = { version = "1.0.217", features = ["derive"] }
 serde_yml = "0.0.12"
 si-unit-prefix = "1.0.0"
-strum = { version = "0.26", features = ["derive"] }
+strum = { version = "0.27", features = ["derive"] }
 strum_macros = "0.27"
 tabled = "0.18.0"
 thiserror = "2.0.11"
