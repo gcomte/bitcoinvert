@@ -18,6 +18,12 @@ jobs:
             archive: zip
     steps:
       - uses: actions/checkout@master
+
+      - name: Set up latest Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+
       - name: Compile and release
         uses: rust-build/rust-build.action@v1.4.5
         env:
