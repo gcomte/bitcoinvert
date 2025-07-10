@@ -10,7 +10,7 @@ license = "MIT"
 
 
 [dependencies]
-clap = { version = "4.5.40", features = ["derive"] }
+clap = { version = "4.5.41", features = ["derive"] }
 colored = "3.0.0"
 env_logger = "0.11.7"
 exitcode = "1.1.2"
