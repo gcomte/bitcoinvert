@@ -1,8 +1,8 @@
-use assert_cmd::Command;
+use assert_cmd::cargo;
 
 #[test]
 fn test_different_amount_of_arguments() {
-    let mut cmd = Command::cargo_bin("bitcoinvert").unwrap();
+    let mut cmd = cargo::cargo_bin_cmd!("bitcoinvert");
 
     // No argument
     cmd.assert().success();
@@ -19,7 +19,7 @@ fn test_different_amount_of_arguments() {
 
 #[test]
 fn test_clean_mode() {
-    let mut cmd = Command::cargo_bin("bitcoinvert").unwrap();
+    let mut cmd = cargo::cargo_bin_cmd!("bitcoinvert");
     cmd.args(vec!["-c", "1", "BTC", "SAT"])
         .assert()
         .stdout("100000000\n");
@@ -27,7 +27,7 @@ fn test_clean_mode() {
 
 #[test]
 fn test_integer_mode() {
-    let mut cmd = Command::cargo_bin("bitcoinvert").unwrap();
+    let mut cmd = cargo::cargo_bin_cmd!("bitcoinvert");
     cmd.args(vec!["-i", "1234567", "MSAT", "SAT"])
         .assert()
         .stdout("1,235 SAT\n");
@@ -35,7 +35,7 @@ fn test_integer_mode() {
 
 #[test]
 fn test_clean_and_integer_mode() {
-    let mut cmd = Command::cargo_bin("bitcoinvert").unwrap();
+    let mut cmd = cargo::cargo_bin_cmd!("bitcoinvert");
     cmd.args(vec!["-ci", "1234567", "MSAT", "SAT"])
         .assert()
         .stdout("1235\n");
@@ -44,49 +44,49 @@ fn test_clean_and_integer_mode() {
 #[test]
 fn test_amount_input_validation() {
     // Throw error for arbitrary string inputs
-    let mut cmd = Command::cargo_bin("bitcoinvert").unwrap();
+    let mut cmd = cargo::cargo_bin_cmd!("bitcoinvert");
     let arbitrary_string = "twentyone";
     cmd.args(vec![arbitrary_string, "SAT", "BTC"])
         .assert()
         .stderr(format!("\"{arbitrary_string}\" is not a valid amount!\n"));
 
     // Disallow using SI symbols as prefix
-    let mut cmd = Command::cargo_bin("bitcoinvert").unwrap();
+    let mut cmd = cargo::cargo_bin_cmd!("bitcoinvert");
     let si_prefix = "M1";
     cmd.args(vec![si_prefix, "SAT", "BTC"])
         .assert()
         .stderr(format!("\"{si_prefix}\" is not a valid amount!\n"));
 
     // Allow using SI symbols as suffix
-    let mut cmd = Command::cargo_bin("bitcoinvert").unwrap();
+    let mut cmd = cargo::cargo_bin_cmd!("bitcoinvert");
     let si_suffix = "1M";
     cmd.args(vec![&si_suffix, "SAT", "BTC"])
         .assert()
         .stdout(format!("0.01 BTC\n"));
 
     // Allow using floating point numbers
-    let mut cmd = Command::cargo_bin("bitcoinvert").unwrap();
+    let mut cmd = cargo::cargo_bin_cmd!("bitcoinvert");
     let si_suffix_floating = "0.00012345";
     cmd.args(vec!["-ci", &si_suffix_floating, "BTC", "SAT"])
         .assert()
         .stdout("12345\n");
 
     // Allow using floating point numbers in combination with SI symbols as suffix
-    let mut cmd = Command::cargo_bin("bitcoinvert").unwrap();
+    let mut cmd = cargo::cargo_bin_cmd!("bitcoinvert");
     let si_suffix_floating = "12.34k";
     cmd.args(vec![&si_suffix_floating, "SAT", "BTC"])
         .assert()
         .stdout("0.0001234 BTC\n");
 
     // Allow using floating point numbers with thousand separators
-    let mut cmd = Command::cargo_bin("bitcoinvert").unwrap();
+    let mut cmd = cargo::cargo_bin_cmd!("bitcoinvert");
     let thousand_separated_float = "1'000 000,000.25";
     cmd.args(vec![&thousand_separated_float, "BITS", "BTC"])
         .assert()
         .stdout("1,000.00000025 BTC\n");
 
     // Print correct error message when only supplying thousand separators
-    let mut cmd = Command::cargo_bin("bitcoinvert").unwrap();
+    let mut cmd = cargo::cargo_bin_cmd!("bitcoinvert");
     let thousand_separator = ", '";
     cmd.args(vec![&thousand_separator, "SAT", "BTC"])
         .assert()
@@ -95,22 +95,22 @@ fn test_amount_input_validation() {
 
 #[test]
 fn test_amount_output_rounding() {
-    let mut cmd = Command::cargo_bin("bitcoinvert").unwrap();
+    let mut cmd = cargo::cargo_bin_cmd!("bitcoinvert");
     cmd.args(vec!["-c", "0.12345", "SAT", "MSAT"])
         .assert()
         .stdout("123\n");
 
-    let mut cmd = Command::cargo_bin("bitcoinvert").unwrap();
+    let mut cmd = cargo::cargo_bin_cmd!("bitcoinvert");
     cmd.args(vec!["-c", "0.6656", "SAT", "MSAT"])
         .assert()
         .stdout("666\n");
 
-    let mut cmd = Command::cargo_bin("bitcoinvert").unwrap();
+    let mut cmd = cargo::cargo_bin_cmd!("bitcoinvert");
     cmd.args(vec!["-c", "90", "SAT", "BTC"])
         .assert()
         .stdout("0.0000009\n");
 
-    let mut cmd = Command::cargo_bin("bitcoinvert").unwrap();
+    let mut cmd = cargo::cargo_bin_cmd!("bitcoinvert");
     let stdout = cmd
         .args(vec!["-c", "0.123", "BTC", "USD"])
         .assert()
@@ -131,7 +131,7 @@ fn test_amount_output_rounding() {
         "Number has more than two decimal places"
     );
 
-    let mut cmd = Command::cargo_bin("bitcoinvert").unwrap();
+    let mut cmd = cargo::cargo_bin_cmd!("bitcoinvert");
     let stdout = cmd
         .args(vec!["-c", "21", "BTC", "JPY"])
         .assert()
@@ -152,7 +152,7 @@ fn test_amount_output_rounding() {
 #[ignore] // only run in CI, because local installations may have different currencies configured
 #[allow(clippy::get_first)]
 fn test_format() {
-    let mut cmd = Command::cargo_bin("bitcoinvert").unwrap();
+    let mut cmd = cargo::cargo_bin_cmd!("bitcoinvert");
 
     let stdout = cmd.arg("-i").assert().get_output().stdout.clone();
     let stdout = String::from_utf8(stdout).unwrap();
