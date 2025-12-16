@@ -17,7 +17,7 @@ exitcode = "1.1.2"
 home-config = { version = "0.6.0", features = ["yaml"] }
 log = "0.4.29"
 regex = "1.12.2"
-reqwest = { version = "0.12.25", features = ["blocking", "json"] }
+reqwest = { version = "0.12.26", features = ["blocking", "json"] }
 serde = { version = "1.0.228", features = ["derive"] }
 serde_yml = "0.0.12"
 si-unit-prefix = "1.0.0"
