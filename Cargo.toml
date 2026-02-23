@@ -22,7 +22,7 @@ serde = { version = "1.0.228", features = ["derive"] }
 serde_yml = "0.0.12"
 si-unit-prefix = "1.0.0"
 strum = { version = "0.27", features = ["derive"] }
-strum_macros = "0.27"
+strum_macros = "0.28"
 tabled = "0.20.0"
 thiserror = "2.0.18"
 thousands = "0.2.0"
