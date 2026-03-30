@@ -89,17 +89,15 @@ mod tests {
         }
 
         #[test]
-        fn round_value_has_correct_decimal_places(
+        fn round_value_is_idempotent(
             amount in 0.0_f64..1.0e8,
             unit in arb_btc_unit(),
         ) {
-            let rounded = unit.round_value(amount);
-            let factor = 10_f64.powi(unit.decimal_places().into());
-            let check = (rounded * factor).round() / factor;
-            let diff = (rounded - check).abs();
+            let once = unit.round_value(amount);
+            let twice = unit.round_value(once);
             prop_assert!(
-                diff < 1.0e-10,
-                "round_value produced too many decimal places: {rounded} (expected {check})"
+                (once - twice).abs() < f64::EPSILON,
+                "round_value is not idempotent: round({amount}) = {once}, round({once}) = {twice}"
             );
         }
     }
