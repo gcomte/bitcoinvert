@@ -1,7 +1,6 @@
 use home_config::HomeConfig;
 use serde::{Deserialize, Serialize};
 use std::error::Error;
-use std::process;
 
 use crate::currency::btc::BitcoinUnit;
 use crate::currency::fiat::Fiat;
@@ -17,19 +16,19 @@ pub struct Defaults {
 }
 
 impl Defaults {
-    pub fn get_default_amount() -> f64 {
-        Self::retrieve().amount
+    pub fn get_default_amount() -> Result<f64, Box<dyn Error>> {
+        Ok(Self::retrieve()?.amount)
     }
 
-    pub fn get_default_input_currency() -> Box<dyn Currency> {
-        Self::retrieve().input_currency
+    pub fn get_default_input_currency() -> Result<Box<dyn Currency>, Box<dyn Error>> {
+        Ok(Self::retrieve()?.input_currency)
     }
 
-    pub fn get_default_output_currencies() -> Vec<Box<dyn Currency>> {
-        Self::retrieve().output_currencies
+    pub fn get_default_output_currencies() -> Result<Vec<Box<dyn Currency>>, Box<dyn Error>> {
+        Ok(Self::retrieve()?.output_currencies)
     }
 
-    pub fn retrieve() -> Defaults {
+    pub fn retrieve() -> Result<Defaults, Box<dyn Error>> {
         let config = HomeConfig::with_config_dir(env!("CARGO_PKG_NAME"), DEFAULTS_FILE);
 
         if !config.path().exists() {
@@ -37,19 +36,16 @@ impl Defaults {
                 "{} does not exist. Creating it with template values.",
                 config.path().display()
             );
-            Self::setup(&config);
+            Self::setup(&config)?;
         }
 
-        match Self::load_defaults(&config) {
-            Ok(defaults) => defaults,
-            Err(err) => {
-                eprintln!(
-                    "Can't load default values from file {}. Error: {}",
-                    DEFAULTS_FILE, err
-                );
-                process::exit(exitcode::USAGE);
-            }
-        }
+        Self::load_defaults(&config).map_err(|err| {
+            format!(
+                "Can't load default values from file {}. Error: {}",
+                DEFAULTS_FILE, err
+            )
+            .into()
+        })
     }
 
     fn load_defaults(config: &HomeConfig) -> Result<Defaults, Box<dyn Error>> {
@@ -70,8 +66,11 @@ impl Defaults {
         Ok(defaults)
     }
 
-    fn setup(config: &HomeConfig) {
-        config.save_yaml(Self::load_defaults_template()).unwrap();
+    fn setup(config: &HomeConfig) -> Result<(), Box<dyn Error>> {
+        config
+            .save_yaml(Self::load_defaults_template())
+            .map_err(|e| format!("Failed to save default config: {e:?}"))?;
+        Ok(())
     }
 
     fn load_defaults_template() -> Defaults {
