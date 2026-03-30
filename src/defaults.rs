@@ -54,7 +54,7 @@ impl Defaults {
             "Reading contents of file {} --> input amount: {}, input currency: {}, output currencies: [{}]",
             config.path().display(),
             defaults.amount,
-            defaults.input_currency.to_string(),
+            defaults.input_currency,
             defaults
                 .output_currencies
                 .iter()

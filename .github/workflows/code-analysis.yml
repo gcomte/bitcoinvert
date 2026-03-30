@@ -46,7 +46,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Linelint
-        uses: fernandrone/linelint@0.4.0
+        uses: fernandrone/linelint@0.0.6
         id: linelint
   unused_dependencies:
     name: Look for unused dependencies
