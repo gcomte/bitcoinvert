@@ -1,20 +1,20 @@
 use crate::fiat_rates::blockchain_info_consumer;
-use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
-use std::sync::Mutex;
+use std::sync::{LazyLock, Mutex};
 use strum_macros::{Display, EnumString};
 
 use crate::currency::Currency;
 use crate::fiat_rates::exchange_rate_provider::ExchangeRateProvider;
 
 // Static to have an easy way of caching the exchange rates.
-lazy_static! {
-    static ref EXCHANGE_RATE_PROVIDER: Mutex<ExchangeRateProvider<blockchain_info_consumer::ApiConsumer>> =
-        Mutex::new(ExchangeRateProvider {
-            data_source: blockchain_info_consumer::ApiConsumer,
-            data: None,
-        });
-}
+static EXCHANGE_RATE_PROVIDER: LazyLock<
+    Mutex<ExchangeRateProvider<blockchain_info_consumer::ApiConsumer>>,
+> = LazyLock::new(|| {
+    Mutex::new(ExchangeRateProvider {
+        data_source: blockchain_info_consumer::ApiConsumer,
+        data: None,
+    })
+});
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Hash, EnumString, Display)]
 #[strum(ascii_case_insensitive, serialize_all = "UPPERCASE")]
