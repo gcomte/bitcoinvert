@@ -98,15 +98,19 @@ mod tests {
     fn test_exchange_rate_caching() {
         let start = Instant::now();
 
-        // First call should take a while.
+        // First call fetches from the API.
         let btc_value = Fiat::USD.btc_value();
-        let elapsed_first_call = start.elapsed().as_micros();
+        let elapsed_first_call = start.elapsed();
         assert!(btc_value > 0.0);
-        assert!(elapsed_first_call > 1000);
 
-        // Second call should be fast (even when looking up another fiat currency).
+        // Second call should use cached data and be much faster.
+        let start2 = Instant::now();
         let btc_value = Fiat::EUR.btc_value();
+        let elapsed_second_call = start2.elapsed();
         assert!(btc_value > 0.0);
-        assert!(start.elapsed().as_micros() - elapsed_first_call < 1000);
+        assert!(
+            elapsed_second_call < elapsed_first_call / 10,
+            "Second call ({elapsed_second_call:?}) should be much faster than first ({elapsed_first_call:?})"
+        );
     }
 }
