@@ -13,11 +13,8 @@ jobs:
     name: Security audit
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: rust-toolchain
-        uses: actions-rs/toolchain@v1.0.6
-        with:
-          toolchain: stable
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
       - name: Install security audit
         run: cargo install cargo-audit
       - name: Run security audit
@@ -26,11 +23,9 @@ jobs:
     name: Check code formatting
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: rust-toolchain
-        uses: actions-rs/toolchain@v1.0.6
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
           components: rustfmt
       - name: Check code formatting
         run: cargo fmt --check --all
@@ -38,33 +33,27 @@ jobs:
     name: Clippy check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: rust-toolchain
-        uses: actions-rs/toolchain@v1.0.6
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
           components: clippy
       - name: Clippy
-        run: cargo clippy --all-targets
+        run: cargo clippy --all-targets -- -D warnings
   linelint:
     name: Check that files end with line break
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Linelint
-        uses: fernandrone/linelint@master
+        uses: fernandrone/linelint@0.4.0
         id: linelint
   unused_dependencies:
     name: Look for unused dependencies
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: rust-toolchain
-        uses: actions-rs/toolchain@v1.0.6
-        with:
-          toolchain: nightly
-          override: true
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@nightly
       - name: Install unused dependency checker
         run: cargo install cargo-udeps
       - name: Run unused dependency checker
