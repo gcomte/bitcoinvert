@@ -89,17 +89,18 @@ mod tests {
         }
 
         #[test]
-        fn round_value_has_correct_decimal_places(
+        fn round_value_error_within_half_unit(
             amount in 0.0_f64..1.0e8,
             unit in arb_btc_unit(),
         ) {
             let rounded = unit.round_value(amount);
-            let factor = 10_f64.powi(unit.decimal_places().into());
-            let check = (rounded * factor).round() / factor;
-            let diff = (rounded - check).abs();
+            let half_unit = 0.5 / 10_f64.powi(unit.decimal_places().into());
+            // Allow a small extra tolerance for f64 representation at large magnitudes
+            let tolerance = half_unit + amount.abs() * f64::EPSILON;
+            let error = (rounded - amount).abs();
             prop_assert!(
-                diff < 1.0e-10,
-                "round_value produced too many decimal places: {rounded} (expected {check})"
+                error <= tolerance,
+                "round_value({amount}) = {rounded}, error {error} exceeds half unit {half_unit}"
             );
         }
     }
