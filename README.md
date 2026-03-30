@@ -162,12 +162,14 @@ unit | description
 `DKK` | Danish krone
 `EUR` | Euro
 `GBP` | Pound sterling
+`GHS` | Ghanaian cedi
 `HKD` | Hong Kong dollar
 `HUF` | Hungarian forint
 `INR` | Indian rupee
 `ISK` | Icelandic króna
 `JPY` | Japanese yen
 `KRW` | South Korean won
+`NGN` | Nigerian naira
 `NZD` | New Zealand dollar
 `PLN` | Polish złoty
 `RON` | Romanian leu
