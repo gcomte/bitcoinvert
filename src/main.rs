@@ -5,6 +5,8 @@ pub mod defaults;
 pub mod fiat_rates;
 mod print;
 
+use std::process;
+
 use colored::*;
 
 use crate::cli_input::CliInput;
@@ -13,7 +15,14 @@ use crate::currency::Currency;
 fn main() {
     env_logger::init();
 
-    let cli_input = CliInput::parse();
+    let cli_input = match CliInput::parse() {
+        Ok(input) => input,
+        Err(e) => {
+            eprintln!("{e}");
+            process::exit(exitcode::USAGE);
+        }
+    };
+
     let value_in_btc = cli_input.amount * cli_input.input_currency.btc_value();
 
     if cli_input.output_currencies.len() == 1 {

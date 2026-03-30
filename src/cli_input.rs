@@ -3,8 +3,8 @@ use colored::*;
 use regex::Regex;
 use si_unit_prefix::SiUnitPrefix;
 use std::error::Error;
+use std::fmt;
 use std::num::ParseFloatError;
-use std::{fmt, process};
 
 use crate::currencies::Currencies;
 use crate::defaults::Defaults;
@@ -66,24 +66,26 @@ impl From<ParseFloatError> for InputError {
     }
 }
 
-impl From<Args> for CliInput {
-    fn from(args: Args) -> Self {
-        Self {
-            amount: Self::parse_amount(args.amount),
-            input_currency: Self::parse_input_currency(&args.input_currency),
-            output_currencies: Self::parse_output_currency(&args.output_currency),
+impl TryFrom<Args> for CliInput {
+    type Error = InputError;
+
+    fn try_from(args: Args) -> Result<Self, Self::Error> {
+        Ok(Self {
+            amount: Self::parse_amount(args.amount)?,
+            input_currency: Self::parse_input_currency(&args.input_currency)?,
+            output_currencies: Self::parse_output_currency(&args.output_currency)?,
             clean: args.clean,
             integer: args.integer,
-        }
+        })
     }
 }
 
 impl CliInput {
-    pub fn parse() -> Self {
-        Args::parse().into()
+    pub fn parse() -> Result<Self, InputError> {
+        Args::parse().try_into()
     }
 
-    fn parse_amount(input: Option<String>) -> f64 {
+    fn parse_amount(input: Option<String>) -> Result<f64, InputError> {
         match input {
             Some(mut amount) => {
                 // check whether last character is an SI unit
@@ -98,34 +100,39 @@ impl CliInput {
                 }
 
                 match Self::strip_thousand_separators(&amount).parse::<f64>() {
-                    Ok(amount) => amount * multiplier,
-                    Err(_) => {
-                        eprintln!("\"{}\" is not a valid amount!", amount);
-                        process::exit(exitcode::USAGE);
-                    }
+                    Ok(amount) => Ok(amount * multiplier),
+                    Err(_) => Err(InputError::new(&format!(
+                        "\"{}\" is not a valid amount!",
+                        amount
+                    ))),
                 }
             }
-            None => Defaults::get_default_amount(),
+            None => Defaults::get_default_amount()
+                .map_err(|e| InputError::new(&format!("Failed to load default amount: {e}"))),
         }
     }
 
-    fn parse_input_currency(string: &Option<String>) -> Box<dyn Currency> {
+    fn parse_input_currency(string: &Option<String>) -> Result<Box<dyn Currency>, InputError> {
         match string {
             Some(currency) => match Currencies::parse(currency) {
-                Ok(currency) => currency,
-                Err(_) => {
-                    eprintln!("\"{}\" is not a valid (input) currency!", currency);
-                    process::exit(exitcode::USAGE);
-                }
+                Ok(currency) => Ok(currency),
+                Err(_) => Err(InputError::new(&format!(
+                    "\"{}\" is not a valid (input) currency!",
+                    currency
+                ))),
             },
-            None => Defaults::get_default_input_currency(),
+            None => Defaults::get_default_input_currency().map_err(|e| {
+                InputError::new(&format!("Failed to load default input currency: {e}"))
+            }),
         }
     }
 
-    fn parse_output_currency(string: &Option<String>) -> Vec<Box<dyn Currency>> {
+    fn parse_output_currency(
+        string: &Option<String>,
+    ) -> Result<Vec<Box<dyn Currency>>, InputError> {
         if let Some(string) = string {
             match Currencies::parse(string) {
-                Ok(currency) => return vec![currency],
+                Ok(currency) => return Ok(vec![currency]),
                 Err(_) => {
                     eprintln!("\n{}\n", format!("\"{}\" is not a valid (output) currency! Showing multiple output currencies instead.", string).yellow());
                 }
@@ -133,6 +140,7 @@ impl CliInput {
         }
 
         Defaults::get_default_output_currencies()
+            .map_err(|e| InputError::new(&format!("Failed to load default output currencies: {e}")))
     }
 
     fn strip_thousand_separators(amount: &str) -> String {
