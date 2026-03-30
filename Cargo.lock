@@ -139,7 +139,7 @@ checksum = "5e764a1d40d510daf35e07be9eb06e75770908c27d411ee6c92109c9840eaaf7"
 
 [[package]]
 name = "bitcoinvert"
-version = "0.1.6"
+version = "0.1.7"
 dependencies = [
  "assert_cmd",
  "clap",
