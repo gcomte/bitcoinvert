@@ -1,0 +1,92 @@
+name: Currency Sync Check
+
+on:
+  schedule:
+    - cron: '0 0 1 * *' # First day of every month
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check-currencies:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check currency list against API
+        run: |
+          set -euo pipefail
+
+          # Currencies to exclude from the check (present in API but intentionally unsupported)
+          EXCLUDED=(HRK) # Croatian Kuna — replaced by EUR
+
+          # Extract supported currencies from the Fiat enum in source code
+          SUPPORTED=$(sed -n '/^pub enum Fiat/,/^}/p' src/currency/fiat.rs | grep -oP '^\s+[A-Z]{3}\b' | tr -d ' ')
+
+          if [ -z "$SUPPORTED" ]; then
+            echo "::error::Failed to extract any currencies from src/currency/fiat.rs"
+            exit 1
+          fi
+
+          # Fetch currencies from the blockchain.info ticker API (with retries)
+          API_RESPONSE=""
+          for attempt in 1 2 3; do
+            API_RESPONSE=$(curl -sf --connect-timeout 10 --max-time 30 https://blockchain.info/ticker) && break
+            echo "::warning::API fetch attempt $attempt failed, retrying..."
+            sleep 5
+          done
+
+          if [ -z "$API_RESPONSE" ]; then
+            echo "::error::Failed to fetch blockchain.info ticker API after 3 attempts"
+            exit 1
+          fi
+
+          API_CURRENCIES=$(echo "$API_RESPONSE" | jq -r 'keys[]') || {
+            echo "::error::Failed to parse API response as JSON"
+            exit 1
+          }
+
+          # Filter out excluded currencies from API list
+          for exc in "${EXCLUDED[@]}"; do
+            API_CURRENCIES=$(echo "$API_CURRENCIES" | grep -v "^${exc}$")
+          done
+
+          # Find currencies in API but not in code
+          MISSING_IN_CODE=""
+          while IFS= read -r currency; do
+            if ! echo "$SUPPORTED" | grep -q "^${currency}$"; then
+              MISSING_IN_CODE="${MISSING_IN_CODE} ${currency}"
+            fi
+          done <<< "$API_CURRENCIES"
+
+          # Find currencies in code but not in API
+          MISSING_IN_API=""
+          while IFS= read -r currency; do
+            if ! echo "$API_CURRENCIES" | grep -q "^${currency}$"; then
+              MISSING_IN_API="${MISSING_IN_API} ${currency}"
+            fi
+          done <<< "$SUPPORTED"
+
+          # Report results
+          EXIT=0
+
+          if [ -n "$MISSING_IN_CODE" ]; then
+            echo "::error::Currencies in API but not in code:${MISSING_IN_CODE}"
+            EXIT=1
+          fi
+
+          if [ -n "$MISSING_IN_API" ]; then
+            echo "::warning::Currencies in code but not in API:${MISSING_IN_API}"
+          fi
+
+          if [ ${#EXCLUDED[@]} -gt 0 ]; then
+            echo "::notice::Excluded currencies: ${EXCLUDED[*]}"
+          fi
+
+          if [ $EXIT -eq 0 ]; then
+            echo "Currency list is in sync with the API."
+          fi
+
+          exit $EXIT
