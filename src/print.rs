@@ -10,7 +10,7 @@ struct TableRow {
     amount: String,
 }
 
-pub fn multi_line(value_in_btc: f64, currencies: &Vec<Box<dyn Currency>>, integer: bool) {
+pub fn multi_line(value_in_btc: f64, currencies: &[Box<dyn Currency>], integer: bool) {
     let mut data = Vec::new();
 
     for currency in currencies {
