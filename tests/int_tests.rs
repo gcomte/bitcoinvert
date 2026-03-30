@@ -1,20 +1,29 @@
 use assert_cmd::cargo;
 
 #[test]
-fn test_different_amount_of_arguments() {
+fn test_no_arguments() {
     let mut cmd = cargo::cargo_bin_cmd!("bitcoinvert");
-
-    // No argument
     cmd.assert().success();
+}
 
-    // 1 argument
-    cmd.args(vec!["1"]).assert().success();
+#[test]
+fn test_one_argument() {
+    let mut cmd = cargo::cargo_bin_cmd!("bitcoinvert");
+    cmd.args(["1"]).assert().success();
+}
 
-    // 2 arguments
-    cmd.args(vec!["BTC"]).assert().success();
+#[test]
+fn test_two_arguments() {
+    let mut cmd = cargo::cargo_bin_cmd!("bitcoinvert");
+    cmd.args(["1", "BTC"]).assert().success();
+}
 
-    // 3 arguments
-    cmd.args(vec!["SAT"]).assert().stdout("100,000,000 SAT\n");
+#[test]
+fn test_three_arguments() {
+    let mut cmd = cargo::cargo_bin_cmd!("bitcoinvert");
+    cmd.args(["1", "BTC", "SAT"])
+        .assert()
+        .stdout("100,000,000 SAT\n");
 }
 
 #[test]
