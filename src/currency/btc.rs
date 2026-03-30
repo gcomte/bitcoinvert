@@ -3,7 +3,7 @@ use strum_macros::{Display, EnumString};
 
 use crate::currency::Currency;
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, EnumString, Display)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, EnumString, Display)]
 #[strum(ascii_case_insensitive, serialize_all = "UPPERCASE")]
 pub enum BitcoinUnit {
     BTC,  // bitcoin
@@ -32,6 +32,75 @@ impl Currency for BitcoinUnit {
             BitcoinUnit::BITS => 2,
             BitcoinUnit::SAT => 3,
             BitcoinUnit::MSAT => 0,
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use proptest::prelude::*;
+
+    fn arb_btc_unit() -> impl Strategy<Value = BitcoinUnit> {
+        prop_oneof![
+            Just(BitcoinUnit::BTC),
+            Just(BitcoinUnit::MBTC),
+            Just(BitcoinUnit::BITS),
+            Just(BitcoinUnit::SAT),
+            Just(BitcoinUnit::MSAT),
+        ]
+    }
+
+    proptest! {
+        #[test]
+        fn roundtrip_btc_conversion(
+            amount in 1.0e-8_f64..1.0e12,
+            from in arb_btc_unit(),
+            to in arb_btc_unit(),
+        ) {
+            // Convert from -> BTC -> to -> BTC -> from
+            let in_btc = amount * from.btc_value();
+            let in_target = in_btc / to.btc_value();
+            let back_in_btc = in_target * to.btc_value();
+            let back_in_from = back_in_btc / from.btc_value();
+
+            let relative_error = ((back_in_from - amount) / amount).abs();
+            prop_assert!(
+                relative_error < 1.0e-10,
+                "Roundtrip error too large: {amount} -> {back_in_from} (error: {relative_error})"
+            );
+        }
+
+        #[test]
+        fn btc_value_is_positive(unit in arb_btc_unit()) {
+            prop_assert!(unit.btc_value() > 0.0);
+        }
+
+        #[test]
+        fn conversion_preserves_order(
+            a in 1.0_f64..1.0e12,
+            b in 1.0_f64..1.0e12,
+            unit in arb_btc_unit(),
+        ) {
+            // If a > b in one unit, a > b in any other unit
+            let a_btc = a * unit.btc_value();
+            let b_btc = b * unit.btc_value();
+            prop_assert_eq!(a > b, a_btc > b_btc);
+        }
+
+        #[test]
+        fn round_value_has_correct_decimal_places(
+            amount in 0.0_f64..1.0e8,
+            unit in arb_btc_unit(),
+        ) {
+            let rounded = unit.round_value(amount);
+            let factor = 10_f64.powi(unit.decimal_places().into());
+            let check = (rounded * factor).round() / factor;
+            let diff = (rounded - check).abs();
+            prop_assert!(
+                diff < 1.0e-10,
+                "round_value produced too many decimal places: {rounded} (expected {check})"
+            );
         }
     }
 }
