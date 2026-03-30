@@ -44,6 +44,8 @@ struct Currencies {
     eur: Ticker,
     #[serde(rename(deserialize = "GBP"))]
     gbp: Ticker,
+    #[serde(rename(deserialize = "GHS"))]
+    ghs: Ticker,
     #[serde(rename(deserialize = "HKD"))]
     hkd: Ticker,
     #[serde(rename(deserialize = "HUF"))]
@@ -56,6 +58,8 @@ struct Currencies {
     jpy: Ticker,
     #[serde(rename(deserialize = "KRW"))]
     krw: Ticker,
+    #[serde(rename(deserialize = "NGN"))]
+    ngn: Ticker,
     #[serde(rename(deserialize = "NZD"))]
     nzd: Ticker,
     #[serde(rename(deserialize = "PLN"))]
@@ -106,12 +110,14 @@ impl ExchangeRateApiConsumer for ApiConsumer {
         map.insert(Fiat::DKK, currencies.dkk.last);
         map.insert(Fiat::EUR, currencies.eur.last);
         map.insert(Fiat::GBP, currencies.gbp.last);
+        map.insert(Fiat::GHS, currencies.ghs.last);
         map.insert(Fiat::HKD, currencies.hkd.last);
         map.insert(Fiat::HUF, currencies.huf.last);
         map.insert(Fiat::INR, currencies.inr.last);
         map.insert(Fiat::ISK, currencies.isk.last);
         map.insert(Fiat::JPY, currencies.jpy.last);
         map.insert(Fiat::KRW, currencies.krw.last);
+        map.insert(Fiat::NGN, currencies.ngn.last);
         map.insert(Fiat::NZD, currencies.nzd.last);
         map.insert(Fiat::PLN, currencies.pln.last);
         map.insert(Fiat::RON, currencies.ron.last);

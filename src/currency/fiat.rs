@@ -30,12 +30,14 @@ pub enum Fiat {
     DKK,
     EUR,
     GBP,
+    GHS,
     HKD,
     HUF,
     INR,
     ISK,
     JPY,
     KRW,
+    NGN,
     NZD,
     PLN,
     RON,
@@ -68,8 +70,10 @@ impl Currency for Fiat {
             | Fiat::DKK
             | Fiat::EUR
             | Fiat::GBP
+            | Fiat::GHS
             | Fiat::HKD
             | Fiat::INR
+            | Fiat::NGN
             | Fiat::NZD
             | Fiat::PLN
             | Fiat::RON
