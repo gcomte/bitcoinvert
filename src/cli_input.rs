@@ -2,8 +2,6 @@ use clap::Parser;
 use colored::*;
 use regex::Regex;
 use si_unit_prefix::SiUnitPrefix;
-use std::error::Error;
-use std::fmt;
 use std::num::ParseFloatError;
 
 use crate::currencies::Currencies;
@@ -35,7 +33,8 @@ pub struct CliInput {
     pub integer: bool,
 }
 
-#[derive(Debug)]
+#[derive(Debug, thiserror::Error)]
+#[error("{details}")]
 pub struct InputError {
     details: String,
 }
@@ -45,18 +44,6 @@ impl InputError {
         Self {
             details: msg.to_string(),
         }
-    }
-}
-
-impl fmt::Display for InputError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.details)
-    }
-}
-
-impl Error for InputError {
-    fn description(&self) -> &str {
-        &self.details
     }
 }
 
