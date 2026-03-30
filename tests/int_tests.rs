@@ -71,7 +71,7 @@ fn test_amount_input_validation() {
     let si_suffix = "1M";
     cmd.args(vec![&si_suffix, "SAT", "BTC"])
         .assert()
-        .stdout(format!("0.01 BTC\n"));
+        .stdout("0.01 BTC\n".to_string());
 
     // Allow using floating point numbers
     let mut cmd = cargo::cargo_bin_cmd!("bitcoinvert");
