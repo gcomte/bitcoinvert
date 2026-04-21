@@ -29,5 +29,5 @@ thousands = "0.2.0"
 typetag = "0.2"
 
 [dev-dependencies]
-assert_cmd = "2.1.2"
+assert_cmd = "2.2.1"
 proptest = "1.11.0"
