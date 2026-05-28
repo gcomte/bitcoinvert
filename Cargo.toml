@@ -19,7 +19,7 @@ log = "0.4.30"
 regex = "1.12.2"
 reqwest = { version = "0.13.4", features = ["blocking", "json"] }
 serde = { version = "1.0.228", features = ["derive"] }
-serde_yml = "0.0.12"
+serde_yml = "0.0.13"
 si-unit-prefix = "1.0.0"
 strum = { version = "0.28", features = ["derive"] }
 strum_macros = "0.28"
