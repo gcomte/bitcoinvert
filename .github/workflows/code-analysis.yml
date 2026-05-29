@@ -55,6 +55,6 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@nightly
       - name: Install unused dependency checker
-        run: cargo install cargo-udeps
+        run: cargo install cargo-udeps --version 0.1.61 --locked
       - name: Run unused dependency checker
         run: cargo +nightly udeps --all-targets
