@@ -11,15 +11,29 @@ const THOUSAND_SEPARATOR_PATTERN: &str = r",|\s|'";
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
+#[command(
+    after_help = "Examples:\n  bitcoinvert 1 BTC SAT\n  bitcoinvert 100k SAT USD EUR GBP\n  bitcoinvert --clean 1 BTC SAT\n  bitcoinvert --json 1 BTC SAT MSAT\n\nOmitted values use your configured defaults. Currency names are case-insensitive; sats is an alias for SAT."
+)]
 pub struct Args {
     /// The amount of money to convert (SI units are supported => 1k = 1,000, 1M = 1,000,000, etc.)
     pub amount: Option<String>,
     /// The currency to convert from
     pub input_currency: Option<String>,
-    /// The currency to convert to
-    pub output_currency: Option<String>,
-    #[arg(short, long, help = "Prints a clean number; no separators, no unit.")]
+    /// The currencies to convert to, in display order (omitted: configured defaults)
+    #[arg(value_name = "OUTPUT_CURRENCY")]
+    pub output_currencies: Vec<String>,
+    #[arg(
+        short,
+        long,
+        help = "Print a single number without separators or unit (requires one output currency)"
+    )]
     clean: bool,
+    #[arg(
+        long,
+        conflicts_with = "clean",
+        help = "Print JSON with canonical currency names and decimal amount strings"
+    )]
+    json: bool,
     #[arg(short, long, help = "Rounds the output to the nearest integer")]
     integer: bool,
 }
@@ -29,6 +43,7 @@ pub struct CliInput {
     pub input_currency: Box<dyn Currency>,
     pub output_currencies: Vec<Box<dyn Currency>>,
     pub clean: bool,
+    pub json: bool,
     pub integer: bool,
 }
 
@@ -50,11 +65,26 @@ impl TryFrom<Args> for CliInput {
     type Error = InputError;
 
     fn try_from(args: Args) -> Result<Self, Self::Error> {
+        let amount = Self::parse_amount(args.amount)?;
+        let input_currency = Self::parse_input_currency(&args.input_currency)?;
+        let output_currencies = Self::parse_output_currencies(&args.output_currencies)?;
+        if output_currencies.is_empty() {
+            return Err(InputError::new(
+                "No output currencies are configured; specify at least one output currency, for example: bitcoinvert 1 BTC SAT",
+            ));
+        }
+        if args.clean && output_currencies.len() != 1 {
+            return Err(InputError::new(
+                "Clean output requires exactly one output currency; specify one, for example: bitcoinvert --clean 1 BTC SAT",
+            ));
+        }
+
         Ok(Self {
-            amount: Self::parse_amount(args.amount)?,
-            input_currency: Self::parse_input_currency(&args.input_currency)?,
-            output_currencies: Self::parse_output_currency(&args.output_currency)?,
+            amount,
+            input_currency,
+            output_currencies,
             clean: args.clean,
+            json: args.json,
             integer: args.integer,
         })
     }
@@ -113,15 +143,19 @@ impl CliInput {
         }
     }
 
-    fn parse_output_currency(
-        string: &Option<String>,
-    ) -> Result<Vec<Box<dyn Currency>>, InputError> {
-        if let Some(string) = string {
-            return Currencies::parse(string)
-                .map(|currency| vec![currency])
-                .map_err(|_| {
-                    InputError::new(&format!("\"{}\" is not a valid (output) currency!", string))
-                });
+    fn parse_output_currencies(strings: &[String]) -> Result<Vec<Box<dyn Currency>>, InputError> {
+        if !strings.is_empty() {
+            return strings
+                .iter()
+                .map(|string| {
+                    Currencies::parse(string).map_err(|_| {
+                        InputError::new(&format!(
+                            "\"{}\" is not a valid (output) currency!",
+                            string
+                        ))
+                    })
+                })
+                .collect();
         }
 
         Defaults::get_default_output_currencies()

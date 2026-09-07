@@ -1,21 +1,54 @@
 use assert_cmd::cargo;
 
+#[cfg(unix)]
+mod common;
+#[cfg(unix)]
+use common::DefaultsFixture;
+
+#[cfg(unix)]
+const SINGLE_OUTPUT_DEFAULTS: &str = "amount: 100000000
+input_currency:
+  BitcoinUnit: SAT
+output_currencies:
+  - BitcoinUnit: BTC
+";
+
+#[cfg(unix)]
 #[test]
 fn test_no_arguments() {
-    let mut cmd = cargo::cargo_bin_cmd!("bitcoinvert");
-    cmd.assert().success();
+    let defaults = DefaultsFixture::new(SINGLE_OUTPUT_DEFAULTS);
+    defaults
+        .command()
+        .assert()
+        .success()
+        .stdout("1 BTC\n")
+        .stderr("");
 }
 
+#[cfg(unix)]
 #[test]
 fn test_one_argument() {
-    let mut cmd = cargo::cargo_bin_cmd!("bitcoinvert");
-    cmd.args(["1"]).assert().success();
+    let defaults = DefaultsFixture::new(SINGLE_OUTPUT_DEFAULTS);
+    defaults
+        .command()
+        .arg("1")
+        .assert()
+        .success()
+        .stdout("0.00000001 BTC\n")
+        .stderr("");
 }
 
+#[cfg(unix)]
 #[test]
 fn test_two_arguments() {
-    let mut cmd = cargo::cargo_bin_cmd!("bitcoinvert");
-    cmd.args(["1", "BTC"]).assert().success();
+    let defaults = DefaultsFixture::new(SINGLE_OUTPUT_DEFAULTS);
+    defaults
+        .command()
+        .args(["1", "BTC"])
+        .assert()
+        .success()
+        .stdout("1 BTC\n")
+        .stderr("");
 }
 
 #[test]
@@ -153,23 +186,32 @@ fn test_amount_output_rounding() {
     assert!(!jpy_value.trim().contains('.'), "Number has decimal places");
 }
 
+#[cfg(unix)]
 #[test]
-#[ignore] // only run in CI, because local installations may have different currencies configured
-#[allow(clippy::get_first)]
 fn test_format() {
-    let mut cmd = cargo::cargo_bin_cmd!("bitcoinvert");
-
-    let stdout = cmd.arg("-i").assert().get_output().stdout.clone();
-    let stdout = String::from_utf8(stdout).unwrap();
-    let stdout_lines: Vec<_> = stdout.split('\n').collect();
-
-    assert_eq!(stdout_lines.get(0).unwrap(), &" unit | amount          "); // table header
-    assert_eq!(stdout_lines.get(1).unwrap(), &"------+-----------------"); // header separator
-    assert_eq!(stdout_lines.get(2).unwrap(), &" BTC  | 1               ");
-    assert_eq!(stdout_lines.get(3).unwrap(), &" SAT  | 100,000,000     ");
-    assert_eq!(stdout_lines.get(4).unwrap(), &" MSAT | 100,000,000,000 ");
-    assert!(stdout_lines.get(5).unwrap().contains(" USD  | "));
-    assert!(stdout_lines.get(6).unwrap().contains(" EUR  | "));
-    assert!(stdout_lines.get(7).unwrap().contains(" GBP  | "));
-    assert_eq!(stdout_lines.get(8).unwrap(), &""); // End with a newline to be POSIX compliant
+    let defaults = DefaultsFixture::new(
+        "amount: 100000000
+input_currency:
+  BitcoinUnit: SAT
+output_currencies:
+  - BitcoinUnit: BTC
+  - BitcoinUnit: SAT
+  - BitcoinUnit: MSAT
+",
+    );
+    defaults
+        .command()
+        .arg("-i")
+        .assert()
+        .success()
+        .stderr("")
+        .stdout(concat!(
+            "Input: 100,000,000 SAT\n",
+            "\n",
+            " unit | amount          \n",
+            "------+-----------------\n",
+            " BTC  | 1               \n",
+            " SAT  | 100,000,000     \n",
+            " MSAT | 100,000,000,000 \n",
+        ));
 }

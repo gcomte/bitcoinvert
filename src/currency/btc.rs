@@ -10,7 +10,8 @@ pub enum BitcoinUnit {
     BTC,  // bitcoin
     MBTC, // milli-bitcoin
     BITS, // μBTC, micro-bitcoin
-    SAT,  // satoshi
+    #[strum(serialize = "SAT", serialize = "SATS", to_string = "SAT")]
+    SAT, // satoshi
     MSAT, // milli-satoshi
 }
 

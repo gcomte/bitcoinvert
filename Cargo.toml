@@ -11,7 +11,6 @@ license = "MIT"
 
 [dependencies]
 clap = { version = "4.5.60", features = ["derive"] }
-colored = "3.1.1"
 env_logger = "0.11.9"
 exitcode = "1.1.2"
 home-config = { version = "0.7.0", features = ["yaml"] }
@@ -35,3 +34,4 @@ typetag = "0.2"
 [dev-dependencies]
 assert_cmd = "2.2.2"
 proptest = "1.11.0"
+tempfile = "3.27.0"
