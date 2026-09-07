@@ -3,7 +3,8 @@ use serde::{Deserialize, Serialize};
 use std::sync::{LazyLock, Mutex};
 use strum_macros::{Display, EnumString};
 
-use crate::currency::Currency;
+use crate::amount::Amount;
+use crate::currency::{ConversionError, Currency};
 use crate::fiat_rates::exchange_rate_provider::ExchangeRateProvider;
 
 // Static to have an easy way of caching the exchange rates.
@@ -52,11 +53,11 @@ pub enum Fiat {
 
 #[typetag::serde]
 impl Currency for Fiat {
-    fn btc_value(&self) -> f64 {
+    fn units_per_btc(&self) -> Result<Amount, ConversionError> {
         EXCHANGE_RATE_PROVIDER
             .lock()
-            .expect("Failed to lock EXCHANGE_RATE_PROVIDER")
-            .btc_value(self)
+            .map_err(|_| ConversionError::RateSource("rate cache lock was poisoned".to_string()))?
+            .units_per_btc(self)
     }
 
     fn decimal_places(&self) -> u8 {
@@ -92,25 +93,13 @@ impl Currency for Fiat {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::time::Instant;
 
     #[test]
-    fn test_exchange_rate_caching() {
-        let start = Instant::now();
-
-        // First call fetches from the API.
-        let btc_value = Fiat::USD.btc_value();
-        let elapsed_first_call = start.elapsed();
-        assert!(btc_value > 0.0);
-
-        // Second call should use cached data and be much faster.
-        let start2 = Instant::now();
-        let btc_value = Fiat::EUR.btc_value();
-        let elapsed_second_call = start2.elapsed();
-        assert!(btc_value > 0.0);
-        assert!(
-            elapsed_second_call < elapsed_first_call / 10,
-            "Second call ({elapsed_second_call:?}) should be much faster than first ({elapsed_first_call:?})"
-        );
+    fn live_fiat_rates_are_positive() {
+        // Cache reuse is tested deterministically by ExchangeRateProvider's
+        // fetch counter; this smoke test exercises the real Fiat path.
+        for currency in [Fiat::USD, Fiat::EUR] {
+            assert!(currency.units_per_btc().unwrap().is_positive());
+        }
     }
 }

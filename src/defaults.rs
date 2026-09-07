@@ -2,6 +2,7 @@ use home_config::HomeConfig;
 use serde::{Deserialize, Serialize};
 use std::error::Error;
 
+use crate::amount::Amount;
 use crate::currency::btc::BitcoinUnit;
 use crate::currency::fiat::Fiat;
 use crate::Currency;
@@ -10,13 +11,13 @@ const DEFAULTS_FILE: &str = "defaults.yaml";
 
 #[derive(Serialize, Deserialize)]
 pub struct Defaults {
-    amount: f64,
+    amount: Amount,
     input_currency: Box<dyn Currency>,
     output_currencies: Vec<Box<dyn Currency>>,
 }
 
 impl Defaults {
-    pub fn get_default_amount() -> Result<f64, Box<dyn Error>> {
+    pub fn get_default_amount() -> Result<Amount, Box<dyn Error>> {
         Ok(Self::retrieve()?.amount)
     }
 
@@ -49,7 +50,7 @@ impl Defaults {
     }
 
     fn load_defaults(config: &HomeConfig) -> Result<Defaults, Box<dyn Error>> {
-        let defaults: Defaults = serde_yml::from_str(&config.read_to_string()?)?;
+        let defaults = Self::parse_defaults(&config.read_to_string()?)?;
         log::debug!(
             "Reading contents of file {} --> input amount: {}, input currency: {}, output currencies: [{}]",
             config.path().display(),
@@ -66,6 +67,13 @@ impl Defaults {
         Ok(defaults)
     }
 
+    fn parse_defaults(source: &str) -> Result<Defaults, Box<dyn Error>> {
+        // Preserve legacy unquoted decimal amounts as their original lexemes.
+        // Normal YAML scalar resolution would convert them through f64 first.
+        let config = noyalib::ParserConfig::new().no_schema(true);
+        Ok(noyalib::from_str_with_config(source, &config)?)
+    }
+
     fn setup(config: &HomeConfig) -> Result<(), Box<dyn Error>> {
         config
             .save_yaml(Self::load_defaults_template())
@@ -75,7 +83,7 @@ impl Defaults {
 
     fn load_defaults_template() -> Defaults {
         Defaults {
-            amount: 100_000_000.0,
+            amount: Amount::from_integer(100_000_000),
             input_currency: Box::new(BitcoinUnit::SAT),
             output_currencies: vec![
                 Box::new(BitcoinUnit::BTC),
@@ -86,5 +94,48 @@ impl Defaults {
                 Box::new(Fiat::GBP),
             ],
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn old_numeric_and_quoted_defaults_remain_exact() {
+        for input in [
+            "9007199254740993.001",
+            "\"9007199254740993.001\"",
+            "9007199254740993001e-3",
+        ] {
+            let yaml = format!("amount: {input}\ninput_currency:\n  BitcoinUnit: SAT\noutput_currencies:\n  - BitcoinUnit: BTC\n");
+            let defaults = Defaults::parse_defaults(&yaml).unwrap();
+            assert_eq!(defaults.amount.to_string(), "9007199254740993.001");
+            assert_eq!(defaults.input_currency.to_string(), "SAT");
+        }
+    }
+
+    #[test]
+    fn rejects_invalid_configured_amounts() {
+        for input in [".nan", ".inf", "1e309", "1e-309", "null", "false"] {
+            let yaml = format!("amount: {input}\ninput_currency:\n  BitcoinUnit: SAT\noutput_currencies:\n  - BitcoinUnit: BTC\n");
+            assert!(Defaults::parse_defaults(&yaml).is_err(), "{input}");
+        }
+    }
+
+    #[test]
+    fn template_roundtrip_preserves_configuration() {
+        let original = Defaults::load_defaults_template();
+        let yaml = noyalib::to_string(&original).unwrap();
+        let restored = Defaults::parse_defaults(&yaml).unwrap();
+        assert_eq!(restored.amount, original.amount);
+        assert_eq!(
+            restored.input_currency.to_string(),
+            original.input_currency.to_string()
+        );
+        assert_eq!(
+            restored.output_currencies.len(),
+            original.output_currencies.len()
+        );
     }
 }

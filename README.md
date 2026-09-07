@@ -20,8 +20,10 @@ by leveraging the [blockchain.info ticker API](https://blockchain.info/ticker).
       <ul>
         <li><a href="#basic-example">Basic example</a></li>
         <li><a href="#clean-output-for-piping">Clean output for piping</a></li>
-        <li><a href="#no-floating-point">No floating point</a></li>
+        <li><a href="#integer-output">Integer output</a></li>
+        <li><a href="#precision-and-rounding">Precision and rounding</a></li>
         <li><a href="#multiple-output-currencies">Multiple output currencies</a></li>
+        <li><a href="#json-output-for-scripts">JSON output for scripts</a></li>
         <li><a href="#other-inputs-missing">Other inputs missing</a></li>
       </ul>
     </li>
@@ -71,10 +73,16 @@ Continue with `step 3` from above.
 
 ## User manual
 
-`bitcoinvert [OPTIONS] [AMOUNT] [INPUT_CURRENCY] [OUTPUT_CURRENCY]`
+`bitcoinvert [OPTIONS] [AMOUNT] [INPUT_CURRENCY] [OUTPUT_CURRENCY]...`
+
+Invalid amounts and explicit currency codes produce an error and a nonzero exit
+status. Defaults are used only for arguments you omit; a misspelled output currency
+does not fall back to the default conversion table. Amounts must be finite, and SI
+suffixes such as `k`, `M`, and `μ` are supported.
 
 ### Basic example
-`bitcoinvert -c 1 BTC SAT`  
+`bitcoinvert 1 BTC SAT`
+
 Returns: `100,000,000 SAT`
 
 ### Clean output for piping
@@ -82,9 +90,42 @@ If you want your result to be lean and ready to be piped into another command, u
 `bitcoinvert -c 1 BTC SAT`  
 This will remove the commas and the unit and simply return `100000000`.
 
-### No floating point
-If you want to get rid of the floating point and display rounded integers instead, use the `-i` flag:  
+Clean output requires exactly one output currency, whether supplied on the command line or in your defaults. It cannot be combined with `--json`.
+
+### Integer output
+To round each result to a whole number, use the `-i` flag:
+
 `bitcoinvert -i 1234567 SAT USD`
+
+### Precision and rounding
+Amounts and exchange rates use exact decimal arithmetic. Results round to the nearest
+displayed unit, with halfway values rounded away from zero. The `-i` flag applies the
+same rule to whole units of the output currency.
+
+Every Bitcoin denomination preserves millisatoshi precision:
+
+Unit | Decimal places
+--- | ---
+`BTC` | 11
+`MBTC` | 8
+`BITS` | 5
+`SAT` | 3
+`MSAT` | 0
+
+For example, `bitcoinvert 1500 MSAT BTC` returns `0.000000015 BTC`, and
+`bitcoinvert 100500 MSAT BITS` returns `1.005 BITS`. Amounts smaller than half a
+millisatoshi round to zero; exactly half a millisatoshi rounds away from zero.
+Fiat currencies keep their existing number of decimal places (usually two).
+
+Decimal input, scientific notation (such as `1.005e-3`), SI suffixes, configured
+amounts, and API rates retain their decimal digits through the conversion. Only the
+final result is rounded, including conversions between two fiat currencies.
+Trailing decimal zeros are omitted from output.
+
+Numbers support up to 309 integer digits and 308 fractional decimal places.
+Scientific exponents, including any SI suffix, must be between -308 and 308;
+amount input is limited to 1024 bytes. Values outside these bounds, conversion
+overflow, and nonpositive or invalid exchange rates produce an error and no result.
 
 ### Using SI suffixes for the amount
 For very big or small numbers, it's easier to use SI suffixes than adding a lot of zeros.  
@@ -94,11 +135,22 @@ For very big or small numbers, it's easier to use SI suffixes than adding a lot 
 Find a list of possible suffixes [here](https://en.wikipedia.org/wiki/Metric_prefix#List_of_SI_prefixes).
 
 ### Multiple output currencies
-If you don't define the output currency, a table of various currencies will be displayed instead:  
+List the currencies you want in the order you want them displayed:
+
+`bitcoinvert 100k SAT USD EUR GBP`
+
+Multiple results appear in a table with the input amount and currency above it. Bitcoin-unit conversions can also be combined without a network request:
+
+`bitcoinvert 1 BTC SAT MSAT`
+
+If you don't define the output currencies, your configured defaults are used:
+
 `bitcoinvert -i 1 BTC`
 
 Returns:
 ```
+Input: 1 BTC
+
  unit | amount          
 ------+-----------------
  BTC  | 1               
@@ -108,6 +160,17 @@ Returns:
  EUR  | 21,114          
  GBP  | 18,503
 ```
+
+### JSON output for scripts
+Use `--json` with one or more output currencies:
+
+`bitcoinvert --json 1 BTC SAT MSAT`
+
+```json
+{"input":{"amount":"1","currency":"BTC"},"outputs":[{"amount":"100000000","currency":"SAT"},{"amount":"100000000000","currency":"MSAT"}]}
+```
+
+`input.amount` is the parsed amount after expanding any SI suffix. Amounts are decimal strings without thousands separators; currency names use their canonical uppercase spelling. The `outputs` array keeps your requested order, including when there is just one result. The `--integer` flag applies to JSON results too. If you omit output currencies, JSON includes your configured defaults.
 
 ### Other inputs missing
 If the input currency is missing, `bitcoinvert` will resort to a default instead (e.g. `SAT`, configurable):    
@@ -122,6 +185,10 @@ Run `bitcoinvert --help` to get a concise manual.
 ## Configuration
 The configuration of your defaults is stored in your config folder (`~/.config/bitcoinvert/defaults.yaml` on Linux).  
 It defines what values `bitcoinvert` will use if you don't specify them in the command line.
+The amount may be an unquoted decimal or a quoted decimal string; both preserve
+their exact value. Newly generated defaults use a quoted amount.
+Configure at least one output currency, or specify an output currency on the
+command line; an empty output list produces a usage error.
 
 ### Sample config
 ```yaml
@@ -140,6 +207,8 @@ output_currencies:
 ## Supported currencies
 
 ### Bitcoin
+Currency names are case-insensitive. `sats` is accepted as an alias for `SAT` in commands and displayed as `SAT` in all output formats.
+
 unit | description
 --- | ---
 `BTC` | bitcoin
