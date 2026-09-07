@@ -1,3 +1,4 @@
+pub mod amount;
 pub mod cli_input;
 pub mod currencies;
 pub mod currency;
@@ -23,19 +24,22 @@ fn main() {
         }
     };
 
-    let value_in_btc = cli_input.amount * cli_input.input_currency.btc_value();
+    let output_values = match currency::convert(
+        &cli_input.amount,
+        &*cli_input.input_currency,
+        &cli_input.output_currencies,
+        cli_input.integer,
+    ) {
+        Ok(values) => values,
+        Err(error) => {
+            eprintln!("{error}");
+            process::exit(exitcode::DATAERR);
+        }
+    };
 
     if cli_input.output_currencies.len() == 1 {
-        let mut output_value = value_in_btc / cli_input.output_currencies[0].btc_value();
-
-        if cli_input.integer {
-            output_value = output_value.round();
-        } else {
-            output_value = cli_input.output_currencies[0].round_value(output_value);
-        }
-
         print::single_line(
-            output_value,
+            &output_values[0],
             &*cli_input.output_currencies[0],
             cli_input.clean,
         );
@@ -49,10 +53,6 @@ fn main() {
             );
         }
 
-        print::multi_line(
-            value_in_btc,
-            &cli_input.output_currencies,
-            cli_input.integer,
-        );
+        print::multi_line(&output_values, &cli_input.output_currencies);
     }
 }

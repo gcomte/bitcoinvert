@@ -1,8 +1,8 @@
 use clap::Parser;
 use regex::Regex;
 use si_unit_prefix::SiUnitPrefix;
-use std::num::ParseFloatError;
 
+use crate::amount::{Amount, MAX_AMOUNT_BYTES};
 use crate::currencies::Currencies;
 use crate::defaults::Defaults;
 use crate::Currency;
@@ -25,7 +25,7 @@ pub struct Args {
 }
 
 pub struct CliInput {
-    pub amount: f64,
+    pub amount: Amount,
     pub input_currency: Box<dyn Currency>,
     pub output_currencies: Vec<Box<dyn Currency>>,
     pub clean: bool,
@@ -43,12 +43,6 @@ impl InputError {
         Self {
             details: msg.to_string(),
         }
-    }
-}
-
-impl From<ParseFloatError> for InputError {
-    fn from(err: ParseFloatError) -> Self {
-        Self::new(&err.to_string())
     }
 }
 
@@ -71,13 +65,18 @@ impl CliInput {
         Args::parse().try_into()
     }
 
-    fn parse_amount(input: Option<String>) -> Result<f64, InputError> {
+    fn parse_amount(input: Option<String>) -> Result<Amount, InputError> {
         match input {
             Some(amount) => {
+                if amount.len() > MAX_AMOUNT_BYTES {
+                    return Err(InputError::new(
+                        "Amount exceeds the maximum length of 1024 bytes!",
+                    ));
+                }
                 let invalid_amount =
                     || InputError::new(&format!("\"{}\" is not a valid amount!", amount));
                 // check whether last character is an SI unit
-                let mut multiplier = 1.0;
+                let mut exponent = 0;
                 let (suffix_start, last_char) = amount
                     .char_indices()
                     .next_back()
@@ -85,32 +84,17 @@ impl CliInput {
                 let mut number = amount.as_str();
 
                 if let Some(si_prefix) = SiUnitPrefix::parse_from_str(&last_char.to_string()) {
-                    multiplier = si_prefix.as_f64();
+                    exponent = si_prefix.as_exp();
 
                     // Remove the complete suffix, including multibyte SI symbols.
                     number = &amount[..suffix_start];
                 }
 
-                let parsed = Self::strip_thousand_separators(number)
-                    .parse::<f64>()
-                    .map_err(|_| invalid_amount())?;
-                let scaled = parsed * multiplier;
-                if !parsed.is_finite() || !scaled.is_finite() {
-                    return Err(invalid_amount());
-                }
-
-                Ok(scaled)
+                Amount::parse_with_exponent(&Self::strip_thousand_separators(number), exponent)
+                    .map_err(|_| invalid_amount())
             }
-            None => {
-                let amount = Defaults::get_default_amount()
-                    .map_err(|e| InputError::new(&format!("Failed to load default amount: {e}")))?;
-                if !amount.is_finite() {
-                    return Err(InputError::new(
-                        "The configured default amount must be finite!",
-                    ));
-                }
-                Ok(amount)
-            }
+            None => Defaults::get_default_amount()
+                .map_err(|e| InputError::new(&format!("Failed to load default amount: {e}"))),
         }
     }
 

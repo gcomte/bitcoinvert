@@ -21,6 +21,7 @@ by leveraging the [blockchain.info ticker API](https://blockchain.info/ticker).
         <li><a href="#basic-example">Basic example</a></li>
         <li><a href="#clean-output-for-piping">Clean output for piping</a></li>
         <li><a href="#no-floating-point">No floating point</a></li>
+        <li><a href="#precision-and-rounding">Precision and rounding</a></li>
         <li><a href="#multiple-output-currencies">Multiple output currencies</a></li>
         <li><a href="#other-inputs-missing">Other inputs missing</a></li>
       </ul>
@@ -91,6 +92,36 @@ This will remove the commas and the unit and simply return `100000000`.
 If you want to get rid of the floating point and display rounded integers instead, use the `-i` flag:  
 `bitcoinvert -i 1234567 SAT USD`
 
+### Precision and rounding
+Amounts and exchange rates use exact decimal arithmetic. Results round to the nearest
+displayed unit, with halfway values rounded away from zero. The `-i` flag applies the
+same rule to whole units of the output currency.
+
+Every Bitcoin denomination preserves millisatoshi precision:
+
+Unit | Decimal places
+--- | ---
+`BTC` | 11
+`MBTC` | 8
+`BITS` | 5
+`SAT` | 3
+`MSAT` | 0
+
+For example, `bitcoinvert 1500 MSAT BTC` returns `0.000000015 BTC`, and
+`bitcoinvert 100500 MSAT BITS` returns `1.005 BITS`. Amounts smaller than half a
+millisatoshi round to zero; exactly half a millisatoshi rounds away from zero.
+Fiat currencies keep their existing number of decimal places (usually two).
+
+Decimal input, scientific notation (such as `1.005e-3`), SI suffixes, configured
+amounts, and API rates retain their decimal digits through the conversion. Only the
+final result is rounded, including conversions between two fiat currencies.
+Trailing decimal zeros are omitted from output.
+
+Numbers support up to 309 integer digits and 308 fractional decimal places.
+Scientific exponents, including any SI suffix, must be between -308 and 308;
+amount input is limited to 1024 bytes. Values outside these bounds, conversion
+overflow, and nonpositive or invalid exchange rates produce an error and no result.
+
 ### Using SI suffixes for the amount
 For very big or small numbers, it's easier to use SI suffixes than adding a lot of zeros.  
 `bitcoinvert 1M SAT USD` => convert 1,000,000 SAT to USD  
@@ -127,6 +158,8 @@ Run `bitcoinvert --help` to get a concise manual.
 ## Configuration
 The configuration of your defaults is stored in your config folder (`~/.config/bitcoinvert/defaults.yaml` on Linux).  
 It defines what values `bitcoinvert` will use if you don't specify them in the command line.
+The amount may be an unquoted decimal or a quoted decimal string; both preserve
+their exact value. Newly generated defaults use a quoted amount.
 
 ### Sample config
 ```yaml

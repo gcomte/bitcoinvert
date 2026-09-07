@@ -123,20 +123,19 @@ fn test_amount_output_rounding() {
     let stdout = cmd
         .args(vec!["-c", "0.123", "BTC", "USD"])
         .assert()
+        .success()
         .get_output()
         .stdout
         .clone();
 
-    let usd_value = String::from_utf8(stdout)
-        .unwrap()
+    let usd_value = String::from_utf8(stdout).unwrap();
+    assert!(!usd_value.trim().is_empty(), "No conversion result");
+    let fractional_places = usd_value
         .trim()
-        .parse::<f64>()
-        .unwrap();
-
-    let usd_value_scalar = (usd_value * 100.0).round();
-    let reconstructed = usd_value_scalar / 100.0;
+        .split_once('.')
+        .map_or(0, |(_, fraction)| fraction.len());
     assert!(
-        (usd_value - reconstructed).abs() < f64::EPSILON,
+        fractional_places <= 2,
         "Number has more than two decimal places"
     );
 
@@ -144,17 +143,14 @@ fn test_amount_output_rounding() {
     let stdout = cmd
         .args(vec!["-c", "21", "BTC", "JPY"])
         .assert()
+        .success()
         .get_output()
         .stdout
         .clone();
 
-    let jpy_value = String::from_utf8(stdout)
-        .unwrap()
-        .trim()
-        .parse::<f64>()
-        .unwrap();
-
-    assert_eq!(jpy_value.round(), jpy_value, "Number has decimal places");
+    let jpy_value = String::from_utf8(stdout).unwrap();
+    assert!(!jpy_value.trim().is_empty(), "No conversion result");
+    assert!(!jpy_value.trim().contains('.'), "Number has decimal places");
 }
 
 #[test]
