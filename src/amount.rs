@@ -9,7 +9,7 @@ use std::fmt;
 use std::str::FromStr;
 
 use num_bigint::BigInt;
-use num_rational::BigRational;
+use num_rational::Ratio;
 use num_traits::{Signed, Zero};
 use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
 
@@ -61,8 +61,8 @@ impl Amount {
         self.coefficient.is_positive()
     }
 
-    pub(crate) fn as_ratio(&self) -> BigRational {
-        BigRational::new(
+    pub(crate) fn as_ratio(&self) -> Ratio<BigInt> {
+        Ratio::new(
             self.coefficient.clone(),
             BigInt::from(10_u8).pow(self.scale),
         )
@@ -70,7 +70,7 @@ impl Amount {
 
     /// Round a bounded ratio once, using nearest with midpoint away from zero.
     pub(crate) fn from_ratio_rounded(
-        value: BigRational,
+        value: Ratio<BigInt>,
         decimal_places: u8,
     ) -> Result<Self, AmountError> {
         if value.numer().bits() > MAX_RATIO_BITS || value.denom().bits() > MAX_RATIO_BITS {
