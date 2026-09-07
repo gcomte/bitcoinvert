@@ -1,22 +1,9 @@
-use assert_cmd::cargo;
 use serde_json::{json, Value};
 
-fn bitcoinvert() -> assert_cmd::Command {
-    let mut command = cargo::cargo_bin_cmd!("bitcoinvert");
-    // These cases should not fetch fiat rates, even when validating fiat inputs.
-    // A networking regression must fail promptly instead of reaching the live API.
-    command
-        .env("HTTP_PROXY", "http://127.0.0.1:9")
-        .env("HTTPS_PROXY", "http://127.0.0.1:9")
-        .env("ALL_PROXY", "http://127.0.0.1:9")
-        .env("NO_PROXY", "")
-        .env("http_proxy", "http://127.0.0.1:9")
-        .env("https_proxy", "http://127.0.0.1:9")
-        .env("all_proxy", "http://127.0.0.1:9")
-        .env("no_proxy", "")
-        .env("RUST_LOG", "off");
-    command
-}
+mod common;
+use common::bitcoinvert;
+#[cfg(unix)]
+use common::DefaultsFixture;
 
 #[test]
 fn multiple_outputs_show_the_input_and_preserve_requested_order() {
@@ -88,6 +75,42 @@ fn json_keeps_the_same_schema_for_one_output() {
         json!({
             "input": {"amount": "1", "currency": "BTC"},
             "outputs": [{"amount": "100000000", "currency": "SAT"}]
+        })
+    );
+}
+
+#[cfg(unix)]
+#[test]
+fn json_uses_exact_configured_defaults_in_configured_output_order() {
+    let defaults = DefaultsFixture::new(
+        "amount: 9007199254740993.001
+input_currency:
+  BitcoinUnit: SAT
+output_currencies:
+  - BitcoinUnit: MSAT
+  - BitcoinUnit: BTC
+  - BitcoinUnit: SAT
+",
+    );
+    let output = defaults
+        .command()
+        .arg("--json")
+        .assert()
+        .success()
+        .stderr("")
+        .get_output()
+        .stdout
+        .clone();
+    let result: Value = serde_json::from_slice(&output).unwrap();
+    assert_eq!(
+        result,
+        json!({
+            "input": {"amount": "9007199254740993.001", "currency": "SAT"},
+            "outputs": [
+                {"amount": "9007199254740993001", "currency": "MSAT"},
+                {"amount": "90071992.54740993001", "currency": "BTC"},
+                {"amount": "9007199254740993.001", "currency": "SAT"},
+            ]
         })
     );
 }
@@ -169,6 +192,75 @@ fn aliases_work_in_single_and_clean_output() {
         .assert()
         .success()
         .stdout("1000000\n")
+        .stderr("");
+}
+
+#[cfg(unix)]
+#[test]
+fn clean_uses_a_single_configured_output() {
+    let defaults = DefaultsFixture::new(
+        "amount: 1234567
+input_currency:
+  BitcoinUnit: MSAT
+output_currencies:
+  - BitcoinUnit: SAT
+",
+    );
+    defaults
+        .command()
+        .arg("--clean")
+        .assert()
+        .success()
+        .stdout("1234.567\n")
+        .stderr("");
+}
+
+#[cfg(unix)]
+#[test]
+fn clean_rejects_multiple_configured_outputs_before_fetching_rates() {
+    let defaults = DefaultsFixture::new(
+        "amount: 1
+input_currency:
+  Fiat: USD
+output_currencies:
+  - BitcoinUnit: BTC
+  - Fiat: EUR
+",
+    );
+    defaults
+        .command()
+        .arg("--clean")
+        .assert()
+        .code(exitcode::USAGE)
+        .stdout("")
+        .stderr("Clean output requires exactly one output currency; specify one, for example: bitcoinvert --clean 1 BTC SAT\n");
+}
+
+#[cfg(unix)]
+#[test]
+fn empty_configured_outputs_fail_in_every_format_before_fetching_rates() {
+    let defaults = DefaultsFixture::new(
+        "amount: 1
+input_currency:
+  Fiat: USD
+output_currencies: []
+",
+    );
+    for flag in [None, Some("--json"), Some("--clean")] {
+        defaults
+            .command()
+            .args(flag)
+            .assert()
+            .code(exitcode::USAGE)
+            .stdout("")
+            .stderr("No output currencies are configured; specify at least one output currency, for example: bitcoinvert 1 BTC SAT\n");
+    }
+    defaults
+        .command()
+        .args(["1", "BTC", "SAT"])
+        .assert()
+        .success()
+        .stdout("100,000,000 SAT\n")
         .stderr("");
 }
 

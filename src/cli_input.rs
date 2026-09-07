@@ -68,6 +68,11 @@ impl TryFrom<Args> for CliInput {
         let amount = Self::parse_amount(args.amount)?;
         let input_currency = Self::parse_input_currency(&args.input_currency)?;
         let output_currencies = Self::parse_output_currencies(&args.output_currencies)?;
+        if output_currencies.is_empty() {
+            return Err(InputError::new(
+                "No output currencies are configured; specify at least one output currency, for example: bitcoinvert 1 BTC SAT",
+            ));
+        }
         if args.clean && output_currencies.len() != 1 {
             return Err(InputError::new(
                 "Clean output requires exactly one output currency; specify one, for example: bitcoinvert --clean 1 BTC SAT",

@@ -155,6 +155,7 @@ dependencies = [
  "strum",
  "strum_macros",
  "tabled",
+ "tempfile",
  "thiserror",
  "thousands",
  "typetag",

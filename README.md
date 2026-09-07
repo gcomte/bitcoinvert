@@ -187,6 +187,8 @@ The configuration of your defaults is stored in your config folder (`~/.config/b
 It defines what values `bitcoinvert` will use if you don't specify them in the command line.
 The amount may be an unquoted decimal or a quoted decimal string; both preserve
 their exact value. Newly generated defaults use a quoted amount.
+Configure at least one output currency, or specify an output currency on the
+command line; an empty output list produces a usage error.
 
 ### Sample config
 ```yaml
