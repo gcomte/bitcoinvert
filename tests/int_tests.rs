@@ -163,13 +163,15 @@ fn test_format() {
     let stdout = String::from_utf8(stdout).unwrap();
     let stdout_lines: Vec<_> = stdout.split('\n').collect();
 
-    assert_eq!(stdout_lines.get(0).unwrap(), &" unit | amount          "); // table header
-    assert_eq!(stdout_lines.get(1).unwrap(), &"------+-----------------"); // header separator
-    assert_eq!(stdout_lines.get(2).unwrap(), &" BTC  | 1               ");
-    assert_eq!(stdout_lines.get(3).unwrap(), &" SAT  | 100,000,000     ");
-    assert_eq!(stdout_lines.get(4).unwrap(), &" MSAT | 100,000,000,000 ");
-    assert!(stdout_lines.get(5).unwrap().contains(" USD  | "));
-    assert!(stdout_lines.get(6).unwrap().contains(" EUR  | "));
-    assert!(stdout_lines.get(7).unwrap().contains(" GBP  | "));
-    assert_eq!(stdout_lines.get(8).unwrap(), &""); // End with a newline to be POSIX compliant
+    assert_eq!(stdout_lines.get(0).unwrap(), &"Input: 100,000,000 SAT");
+    assert_eq!(stdout_lines.get(1).unwrap(), &"");
+    assert_eq!(stdout_lines.get(2).unwrap(), &" unit | amount          "); // table header
+    assert_eq!(stdout_lines.get(3).unwrap(), &"------+-----------------"); // header separator
+    assert_eq!(stdout_lines.get(4).unwrap(), &" BTC  | 1               ");
+    assert_eq!(stdout_lines.get(5).unwrap(), &" SAT  | 100,000,000     ");
+    assert_eq!(stdout_lines.get(6).unwrap(), &" MSAT | 100,000,000,000 ");
+    assert!(stdout_lines.get(7).unwrap().contains(" USD  | "));
+    assert!(stdout_lines.get(8).unwrap().contains(" EUR  | "));
+    assert!(stdout_lines.get(9).unwrap().contains(" GBP  | "));
+    assert_eq!(stdout_lines.get(10).unwrap(), &""); // End with a newline to be POSIX compliant
 }

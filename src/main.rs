@@ -8,8 +8,6 @@ mod print;
 
 use std::process;
 
-use colored::*;
-
 use crate::cli_input::CliInput;
 use crate::currency::Currency;
 
@@ -37,22 +35,28 @@ fn main() {
         }
     };
 
-    if cli_input.output_currencies.len() == 1 {
-        print::single_line(
-            &output_values[0],
-            &*cli_input.output_currencies[0],
-            cli_input.clean,
-        );
-    } else {
-        if cli_input.clean {
-            eprintln!(
-                "\n{}\n",
-                "Cannot use clean mode for multi currency output"
-                    .to_string()
-                    .yellow()
-            );
-        }
+    let input = print::Money {
+        amount: cli_input.amount.to_string(),
+        currency: cli_input.input_currency.to_string(),
+    };
+    let outputs: Vec<_> = cli_input
+        .output_currencies
+        .iter()
+        .zip(output_values)
+        .map(|(currency, amount)| print::Money {
+            amount: amount.to_string(),
+            currency: currency.to_string(),
+        })
+        .collect();
 
-        print::multi_line(&output_values, &cli_input.output_currencies);
+    if cli_input.json {
+        if let Err(error) = print::json(&input, &outputs) {
+            eprintln!("Failed to format JSON output: {error}");
+            process::exit(exitcode::SOFTWARE);
+        }
+    } else if let [output] = outputs.as_slice() {
+        print::single_line(output, cli_input.clean);
+    } else {
+        print::multi_line(&input, &outputs);
     }
 }
