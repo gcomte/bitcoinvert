@@ -1,124 +1,109 @@
+use crate::amount::Amount;
 use crate::currency::fiat::Fiat;
+use crate::currency::ConversionError;
 use std::collections::HashMap;
 
 pub trait ExchangeRateApiConsumer {
-    fn fetch_api(&self) -> HashMap<Fiat, f64>;
+    fn fetch_api(&self) -> Result<HashMap<Fiat, Amount>, ConversionError>;
 }
 
 pub struct ExchangeRateProvider<T: ExchangeRateApiConsumer> {
     pub data_source: T,
-    pub data: Option<HashMap<Fiat, f64>>,
+    pub data: Option<HashMap<Fiat, Amount>>,
 }
 
 impl<T: ExchangeRateApiConsumer> ExchangeRateProvider<T> {
-    pub fn btc_value(&mut self, currency: &Fiat) -> f64 {
-        self.fetch();
-
-        1.0 / self.data.as_ref().unwrap().get(currency).unwrap()
-    }
-
-    fn fetch(&mut self) {
+    pub fn units_per_btc(&mut self, currency: &Fiat) -> Result<Amount, ConversionError> {
         if self.data.is_none() {
-            self.data = Some(self.data_source.fetch_api());
+            self.data = Some(self.data_source.fetch_api()?);
         }
+        let rate = self
+            .data
+            .as_ref()
+            .and_then(|data| data.get(currency))
+            .ok_or_else(|| ConversionError::MissingRate(currency.to_string()))?;
+        if !rate.is_positive() {
+            return Err(ConversionError::InvalidRate(currency.to_string()));
+        }
+        Ok(rate.clone())
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    use std::sync::atomic::{AtomicUsize, Ordering};
+    use std::cell::Cell;
 
     struct MockApiConsumer {
-        fetch_count: &'static AtomicUsize,
+        fetch_count: Cell<usize>,
     }
 
     impl ExchangeRateApiConsumer for MockApiConsumer {
-        fn fetch_api(&self) -> HashMap<Fiat, f64> {
-            self.fetch_count.fetch_add(1, Ordering::SeqCst);
-            let mut rates = HashMap::new();
-            rates.insert(Fiat::USD, 50_000.0);
-            rates.insert(Fiat::EUR, 45_000.0);
-            rates.insert(Fiat::JPY, 7_500_000.0);
-            rates
+        fn fetch_api(&self) -> Result<HashMap<Fiat, Amount>, ConversionError> {
+            self.fetch_count.set(self.fetch_count.get() + 1);
+            Ok(HashMap::from([
+                (Fiat::USD, "50000.005".parse().unwrap()),
+                (Fiat::EUR, "45000".parse().unwrap()),
+                (Fiat::JPY, "7500000".parse().unwrap()),
+            ]))
         }
     }
 
-    fn mock_provider_with_data(rates: HashMap<Fiat, f64>) -> ExchangeRateProvider<MockApiConsumer> {
-        static UNUSED: AtomicUsize = AtomicUsize::new(0);
+    fn mock_provider(data: Option<HashMap<Fiat, Amount>>) -> ExchangeRateProvider<MockApiConsumer> {
         ExchangeRateProvider {
             data_source: MockApiConsumer {
-                fetch_count: &UNUSED,
+                fetch_count: Cell::new(0),
             },
-            data: Some(rates),
-        }
-    }
-
-    fn mock_provider_with_fetch(
-        counter: &'static AtomicUsize,
-    ) -> ExchangeRateProvider<MockApiConsumer> {
-        ExchangeRateProvider {
-            data_source: MockApiConsumer {
-                fetch_count: counter,
-            },
-            data: None,
+            data,
         }
     }
 
     #[test]
-    fn btc_value_returns_inverse_of_rate() {
-        let mut rates = HashMap::new();
-        rates.insert(Fiat::USD, 50_000.0);
-        let mut provider = mock_provider_with_data(rates);
-
-        let btc_value = provider.btc_value(&Fiat::USD);
-        assert!((btc_value - 1.0 / 50_000.0).abs() < f64::EPSILON);
+    fn source_rates_are_preserved_exactly() {
+        let mut provider = mock_provider(None);
+        assert_eq!(
+            provider.units_per_btc(&Fiat::USD).unwrap().to_string(),
+            "50000.005"
+        );
+        assert_eq!(
+            provider.units_per_btc(&Fiat::EUR).unwrap().to_string(),
+            "45000"
+        );
+        assert_eq!(
+            provider.units_per_btc(&Fiat::JPY).unwrap().to_string(),
+            "7500000"
+        );
     }
 
     #[test]
     fn data_is_cached_after_first_fetch() {
-        static COUNTER: AtomicUsize = AtomicUsize::new(0);
-        let mut provider = mock_provider_with_fetch(&COUNTER);
-
+        let mut provider = mock_provider(None);
         assert!(provider.data.is_none());
-        provider.btc_value(&Fiat::USD);
+        provider.units_per_btc(&Fiat::USD).unwrap();
         assert!(provider.data.is_some());
-        assert_eq!(COUNTER.load(Ordering::SeqCst), 1);
-
-        // Second call uses cached data — fetch_api not called again
-        provider.btc_value(&Fiat::EUR);
-        assert_eq!(COUNTER.load(Ordering::SeqCst), 1);
+        assert_eq!(provider.data_source.fetch_count.get(), 1);
+        provider.units_per_btc(&Fiat::EUR).unwrap();
+        assert_eq!(provider.data_source.fetch_count.get(), 1);
     }
 
     #[test]
-    #[should_panic(expected = "called `Option::unwrap()` on a `None` value")]
-    fn missing_currency_panics() {
-        let rates = HashMap::new();
-        let mut provider = mock_provider_with_data(rates);
-        provider.btc_value(&Fiat::USD);
+    fn missing_currency_returns_an_error() {
+        let mut provider = mock_provider(Some(HashMap::new()));
+        assert!(matches!(
+            provider.units_per_btc(&Fiat::USD),
+            Err(ConversionError::MissingRate(_))
+        ));
     }
 
     #[test]
-    fn zero_rate_produces_infinity() {
-        let mut rates = HashMap::new();
-        rates.insert(Fiat::USD, 0.0);
-        let mut provider = mock_provider_with_data(rates);
-
-        let btc_value = provider.btc_value(&Fiat::USD);
-        assert!(btc_value.is_infinite());
-    }
-
-    #[test]
-    fn multiple_currencies_return_correct_values() {
-        let mut rates = HashMap::new();
-        rates.insert(Fiat::USD, 50_000.0);
-        rates.insert(Fiat::EUR, 45_000.0);
-        rates.insert(Fiat::JPY, 7_500_000.0);
-        let mut provider = mock_provider_with_data(rates);
-
-        assert!((provider.btc_value(&Fiat::USD) - 1.0 / 50_000.0).abs() < f64::EPSILON);
-        assert!((provider.btc_value(&Fiat::EUR) - 1.0 / 45_000.0).abs() < f64::EPSILON);
-        assert!((provider.btc_value(&Fiat::JPY) - 1.0 / 7_500_000.0).abs() < f64::EPSILON);
+    fn zero_and_negative_rates_return_errors() {
+        for rate in ["0", "-0.1"] {
+            let mut provider =
+                mock_provider(Some(HashMap::from([(Fiat::USD, rate.parse().unwrap())])));
+            assert!(matches!(
+                provider.units_per_btc(&Fiat::USD),
+                Err(ConversionError::InvalidRate(_))
+            ));
+        }
     }
 }
