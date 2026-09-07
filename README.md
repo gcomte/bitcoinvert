@@ -73,6 +73,11 @@ Continue with `step 3` from above.
 
 `bitcoinvert [OPTIONS] [AMOUNT] [INPUT_CURRENCY] [OUTPUT_CURRENCY]`
 
+Invalid amounts and explicit currency codes produce an error and a nonzero exit
+status. Defaults are used only for arguments you omit; a misspelled output currency
+does not fall back to the default conversion table. Amounts must be finite, and SI
+suffixes such as `k`, `M`, and `μ` are supported.
+
 ### Basic example
 `bitcoinvert -c 1 BTC SAT`  
 Returns: `100,000,000 SAT`

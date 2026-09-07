@@ -1,5 +1,4 @@
 use clap::Parser;
-use colored::*;
 use regex::Regex;
 use si_unit_prefix::SiUnitPrefix;
 use std::num::ParseFloatError;
@@ -74,28 +73,44 @@ impl CliInput {
 
     fn parse_amount(input: Option<String>) -> Result<f64, InputError> {
         match input {
-            Some(mut amount) => {
+            Some(amount) => {
+                let invalid_amount =
+                    || InputError::new(&format!("\"{}\" is not a valid amount!", amount));
                 // check whether last character is an SI unit
                 let mut multiplier = 1.0;
-                let last_char = amount.chars().last().unwrap();
+                let (suffix_start, last_char) = amount
+                    .char_indices()
+                    .next_back()
+                    .ok_or_else(invalid_amount)?;
+                let mut number = amount.as_str();
 
                 if let Some(si_prefix) = SiUnitPrefix::parse_from_str(&last_char.to_string()) {
                     multiplier = si_prefix.as_f64();
 
-                    // remove last character
-                    amount = amount[..amount.len() - 1].to_string();
+                    // Remove the complete suffix, including multibyte SI symbols.
+                    number = &amount[..suffix_start];
                 }
 
-                match Self::strip_thousand_separators(&amount).parse::<f64>() {
-                    Ok(amount) => Ok(amount * multiplier),
-                    Err(_) => Err(InputError::new(&format!(
-                        "\"{}\" is not a valid amount!",
-                        amount
-                    ))),
+                let parsed = Self::strip_thousand_separators(number)
+                    .parse::<f64>()
+                    .map_err(|_| invalid_amount())?;
+                let scaled = parsed * multiplier;
+                if !parsed.is_finite() || !scaled.is_finite() {
+                    return Err(invalid_amount());
                 }
+
+                Ok(scaled)
             }
-            None => Defaults::get_default_amount()
-                .map_err(|e| InputError::new(&format!("Failed to load default amount: {e}"))),
+            None => {
+                let amount = Defaults::get_default_amount()
+                    .map_err(|e| InputError::new(&format!("Failed to load default amount: {e}")))?;
+                if !amount.is_finite() {
+                    return Err(InputError::new(
+                        "The configured default amount must be finite!",
+                    ));
+                }
+                Ok(amount)
+            }
         }
     }
 
@@ -118,12 +133,11 @@ impl CliInput {
         string: &Option<String>,
     ) -> Result<Vec<Box<dyn Currency>>, InputError> {
         if let Some(string) = string {
-            match Currencies::parse(string) {
-                Ok(currency) => return Ok(vec![currency]),
-                Err(_) => {
-                    eprintln!("\n{}\n", format!("\"{}\" is not a valid (output) currency! Showing multiple output currencies instead.", string).yellow());
-                }
-            }
+            return Currencies::parse(string)
+                .map(|currency| vec![currency])
+                .map_err(|_| {
+                    InputError::new(&format!("\"{}\" is not a valid (output) currency!", string))
+                });
         }
 
         Defaults::get_default_output_currencies()
