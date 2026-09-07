@@ -16,7 +16,7 @@ exitcode = "1.1.2"
 home-config = { version = "0.7.0", features = ["yaml"] }
 log = "0.4.32"
 noyalib = { version = "0.0.5", default-features = false, features = ["std"] }
-num-bigint = "0.4.8"
+num-bigint = "0.5.1"
 num-rational = "0.4.2"
 num-traits = "0.2.19"
 regex = "1.12.4"
