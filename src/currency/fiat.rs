@@ -93,25 +93,13 @@ impl Currency for Fiat {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::time::Instant;
 
     #[test]
-    fn test_exchange_rate_caching() {
-        let start = Instant::now();
-
-        // First call fetches from the API.
-        let btc_value = Fiat::USD.units_per_btc().unwrap();
-        let elapsed_first_call = start.elapsed();
-        assert!(btc_value.is_positive());
-
-        // Second call should use cached data and be much faster.
-        let start2 = Instant::now();
-        let btc_value = Fiat::EUR.units_per_btc().unwrap();
-        let elapsed_second_call = start2.elapsed();
-        assert!(btc_value.is_positive());
-        assert!(
-            elapsed_second_call < elapsed_first_call / 10,
-            "Second call ({elapsed_second_call:?}) should be much faster than first ({elapsed_first_call:?})"
-        );
+    fn live_fiat_rates_are_positive() {
+        // Cache reuse is tested deterministically by ExchangeRateProvider's
+        // fetch counter; this smoke test exercises the real Fiat path.
+        for currency in [Fiat::USD, Fiat::EUR] {
+            assert!(currency.units_per_btc().unwrap().is_positive());
+        }
     }
 }
