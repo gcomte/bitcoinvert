@@ -1,6 +1,6 @@
 [package]
 name = "bitcoinvert"
-version = "0.1.8"
+version = "0.2.0"
 description = "CLI tool that fetches Bitcoin exchange rates from Blockchain.info and shows conversions to other currencies/denominations"
 authors = ["Gabriel Comte"]
 edition = "2021"
