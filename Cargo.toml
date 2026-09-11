@@ -15,7 +15,7 @@ env_logger = "0.11.9"
 exitcode = "1.1.2"
 home-config = { version = "0.7.0", features = ["yaml"] }
 log = "0.4.32"
-noyalib = { version = "0.0.32", default-features = false, features = ["std"] }
+noyalib = { version = "0.0.42", default-features = false, features = ["std"] }
 num-bigint = "0.5.1"
 num-rational = { version = "0.4.2", default-features = false, features = ["std"] }
 num-traits = "0.2.19"
