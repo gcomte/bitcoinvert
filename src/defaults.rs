@@ -75,8 +75,10 @@ impl Defaults {
     }
 
     fn setup(config: &HomeConfig) -> Result<(), Box<dyn Error>> {
+        let yaml = noyalib::to_string(&Self::load_defaults_template())
+            .map_err(|e| format!("Failed to serialize default config: {e}"))?;
         config
-            .save_yaml(Self::load_defaults_template())
+            .save(yaml)
             .map_err(|e| format!("Failed to save default config: {e:?}"))?;
         Ok(())
     }
@@ -137,5 +139,24 @@ mod tests {
             restored.output_currencies.len(),
             original.output_currencies.len()
         );
+    }
+
+    #[test]
+    fn setup_creates_readable_defaults_in_missing_directory() {
+        let directory = tempfile::tempdir().unwrap();
+        let path = directory.path().join("bitcoinvert").join(DEFAULTS_FILE);
+        let config = HomeConfig::with_file(&path);
+
+        Defaults::setup(&config).unwrap();
+
+        let defaults = Defaults::load_defaults(&config).unwrap();
+        assert_eq!(defaults.amount.to_string(), "100000000");
+        assert_eq!(defaults.input_currency.to_string(), "SAT");
+        let currencies: Vec<_> = defaults
+            .output_currencies
+            .iter()
+            .map(ToString::to_string)
+            .collect();
+        assert_eq!(currencies, ["BTC", "SAT", "MSAT", "USD", "EUR", "GBP"]);
     }
 }
