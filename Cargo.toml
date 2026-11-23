@@ -10,16 +10,16 @@ license = "MIT"
 
 
 [dependencies]
-clap = { version = "4.6.7", features = ["derive"] }
-env_logger = "0.11.11"
+clap = { version = "4.6.9", features = ["derive"] }
+env_logger = "0.11.12"
 exitcode = "1.1.2"
 home-config = "0.7.0"
-log = "0.4.34"
-noyalib = { version = "0.0.58", default-features = false, features = ["std"] }
+log = "0.4.35"
+noyalib = { version = "0.0.63", default-features = false, features = ["std"] }
 num-bigint = "0.5.1"
 num-rational = { version = "0.4.2", default-features = false, features = ["std"] }
 num-traits = "0.2.19"
-regex = "1.13.1"
+regex = "1.13.2"
 reqwest = { version = "0.13.5", features = ["blocking"] }
 serde = { version = "1.0.229", features = ["derive"] }
 serde_json = { version = "1.0.154", features = ["arbitrary_precision"] }
